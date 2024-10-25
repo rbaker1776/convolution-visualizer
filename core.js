@@ -71,7 +71,7 @@ function plotFunction()
     drawAxes();
     ctx.beginPath();
 
-    const nPoints = 10000;
+    const nPoints = canvas.width;
     const aspect = canvas.width / canvas.height;
     const tMin = -aspect * scale;
     const yMax = scale * (1 + 10 / canvas.height);

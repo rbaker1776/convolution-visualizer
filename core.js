@@ -1,7 +1,50 @@
 
-var scale = 5;
 
-function resizeCanvas()
+
+function drawPlotGrid()
+{
+    const canvas = document.getElementById("plotCanvas");
+    const ctx = canvas.getContext("2d");
+
+    ctx.beginPath();
+
+    ctx.moveTo(0, canvas.height / 2);
+    ctx.lineTo(canvas.width, canvas.height / 2);
+    ctx.moveTo(canvas.width / 2, 0);
+    ctx.lineTo(canvas.width / 2, canvas.height);
+
+    ctx.strokeStyle = "white";
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    const interval = Math.pow(10, Math.floor(Math.log10(plotScale) - 0.2));
+    const aspect = canvas.width / canvas.height;
+    const yMax = plotScale;
+    const xMax = plotScale * aspect;
+
+    for (let i = -Math.floor(16 * aspect); i <= Math.floor(16 * aspect); ++i)
+    {
+        if (i == 0) continue;
+        const x = (canvas.width / 2) + (i * interval) * (canvas.height / (2 * plotScale));
+        const y = (canvas.height / 2) - (i * interval) * (canvas.height / (2 * plotScale));
+        if (x >= 0 && x < canvas.width)
+        {
+            ctx.moveTo(x, 0);
+            ctx.lineTo(x, canvas.height);
+        }
+        if (y >= 0 && y < canvas.width)
+        {
+            ctx.moveTo(0, y);
+            ctx.lineTo(canvas.width, y); 
+        }
+    }
+
+    ctx.strokeStyle = "grey";
+    ctx.lineWidth = 1;
+    ctx.stroke();
+}
+
+function resizePlotCanvas()
 {
     const canvas = document.getElementById("plotCanvas");
     const ctx = canvas.getContext("2d");
@@ -12,54 +55,9 @@ function resizeCanvas()
     canvas.width = width * window.devicePixelRatio;
     canvas.height = height * window.devicePixelRatio;
 
-    ctx.scale(window,devicePixelRatio, window.devicePixelRatio);
+    ctx.scale(window, window.devicePixelRatio, window.devicePixelRatio);
 
     plotFunction();
-}
-
-function drawAxes()
-{
-    const canvas = document.getElementById("plotCanvas");
-    const ctx = canvas.getContext("2d");
-
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.beginPath();
-
-    ctx.moveTo(0, canvas.height / 2);
-    ctx.lineTo(canvas.width, canvas.height / 2);
-    ctx.moveTo(canvas.width / 2, 0);
-    ctx.lineTo(canvas.width / 2, canvas.height);
-
-    ctx.strokeStyle = "black";
-    ctx.lineWidth = 2;
-    ctx.stroke();
-
-    const interval = Math.pow(10, Math.floor(Math.log10(scale) - 0.2));
-    const yMax = scale;
-    const aspect = canvas.width / canvas.height;
-    const xMax = scale * aspect;
-
-    for (let y = -interval * 16; y <= interval * 16; y += interval)
-    {
-        if (y > yMax || y < -yMax || Math.abs(y) * 2 < interval)
-            continue;
-        const drawY = (canvas.height / 2) - (y * canvas.height) / (scale * 2);
-        ctx.moveTo(0, drawY);
-        ctx.lineTo(canvas.width, drawY);
-    }
-
-    for (let x = -interval * Math.floor(16 * aspect); x <= interval * Math.floor(16 * aspect); x += interval)
-    {
-        if (x > xMax || x < -xMax || Math.abs(x) * 2 < interval)
-            continue;
-        const drawX = (canvas.width / 2) + (x * canvas.width) / (scale * aspect * 2);
-        ctx.moveTo(drawX, 0);
-        ctx.lineTo(drawX, canvas.height);
-    }
-
-    ctx.strokeStyle = "grey";
-    ctx.lineWidth = 1;
-    ctx.stroke();
 }
 
 function plotFunction()
@@ -68,36 +66,36 @@ function plotFunction()
     const ctx = canvas.getContext("2d");
     const inputFx = document.getElementById("functionInput").value;
 
-    drawAxes();
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    drawPlotGrid();
+
     ctx.beginPath();
 
-    const nPoints = canvas.width;
     const aspect = canvas.width / canvas.height;
-    const tMin = -aspect * scale;
-    const yMax = scale * (1 + 10 / canvas.height);
+    const tMin = -aspect * plotScale;
+    const yMax = plotScale * (1 + 10 / canvas.height);
     let yPrev = 0;
 
-    for (let i = 0; i <= nPoints; i++)
+    for (let drawX = -1; drawX <= canvas.width + 1; drawX += 0.5)
     {
-        const t = tMin + 2 * scale * aspect * i / nPoints;
-        const y = Math.min(Math.max(eval(inputFx), -yMax), yMax);
-        const drawX =  (canvas.width / 2) + (t *  canvas.width) / (scale * aspect * 2);
-        const drawY = (canvas.height / 2) - (y * canvas.height) / (scale * 2);
-        
-        if (Math.abs(y) == yMax && Math.abs(yPrev) == yMax)
-            ctx.moveTo(drawX, drawY);
+        const t = tMin + 2 * plotScale * aspect * drawX / canvas.width;
+        const f_t = Math.min(Math.max(eval(inputFx), -yMax), yMax);
+        const y = (canvas.height / 2) - (f_t * canvas.height) / (plotScale * 2);
+
+        if (((y < 0 || y > canvas.height) && (yPrev < 0 || yPrev > canvas.height)) || drawX == -1)
+            ctx.moveTo(drawX, y);
         else
-            ctx.lineTo(drawX, drawY);
+            ctx.lineTo(drawX, y);
 
         yPrev = y;
     }
-
+   
     ctx.strokeStyle = "red";
     ctx.lineWidth = 5;
     ctx.stroke();
 }
 
-function zoom(event)
+function zoomPlot(event)
 {
     const canvas = document.getElementById("plotCanvas");
     const ctx = canvas.getContext("2d");
@@ -105,15 +103,17 @@ function zoom(event)
     event.preventDefault();
 
     if (event.deltaY > 0)
-        scale *= Math.max(1 + event.deltaY / 100);
+        plotScale *= Math.max(1 + event.deltaY / 100);
     else
-        scale /= Math.max(1 - event.deltaY / 100);
+        plotScale /= Math.max(1 - event.deltaY / 100);
 
     plotFunction();
 }
 
-document.getElementById("plotCanvas").addEventListener("wheel", zoom);
+var plotScale = 5;
 
-window.addEventListener("resize", resizeCanvas);
+document.getElementById("plotCanvas").addEventListener("wheel", zoomPlot);
 
-resizeCanvas();
+window.addEventListener("resize", resizePlotCanvas);
+
+resizePlotCanvas();

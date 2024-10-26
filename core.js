@@ -60,6 +60,52 @@ function resizePlotCanvas()
     drawPlotCanvas();
 }
 
+function plotConvolution(f, g)
+{
+    const canvas = document.getElementById("plotCanvas");
+    const ctx = canvas.getContext("2d");
+
+    const aspect = canvas.width / canvas.height;
+    const tMin = -aspect * plotScale;
+    const deltaT = 2 * plotScale * aspect / canvas.width;
+    const yMax = plotScale * (1 + 10 / canvas.height);
+
+    f = f.replace(/\bt\b/g, "(t * deltaT + tMin)");
+    g = g.replace(/\bt\b/g, "(t * deltaT + tMin)");
+
+    const ft = Array.from({ length: canvas.width }, (_, t) => eval(f));
+    const gt = Array.from({ length: canvas.width }, (_, t) => eval(g));
+    console.log(gt);
+    const convolution = Array.from({ length: ft.length + gt.length - 1 }, (_, t) => {
+        let sum = 0;
+        for (let T = Math.max(0, t - (ft.length - 1)); T <= Math.min(t, ft.length - 1); T++)
+            sum += ft[t-T] * gt[T] * deltaT;
+        return sum;
+    });
+
+    console.log(convolution);
+
+    ctx.beginPath();
+
+    let outOfBounds = false;
+    for (let drawX = 0; drawX < canvas.width; drawX++)
+    {
+        const drawY = Math.min(Math.max(
+            ((canvas.height / 2) * (1 - (convolution[drawX + ft.length / 2] / plotScale)))
+        , -1), canvas.height + 1);
+        if (outOfBounds && (drawY < 0 || drawY > canvas.height))
+            ctx.moveTo(drawX, drawY);
+        else
+            ctx.lineTo(drawX, drawY);
+        outOfBounds = (drawY < 0 || drawY > canvas.height);
+    }
+   
+    ctx.strokeStyle = "cyan";
+    ctx.lineWidth = 5;
+    ctx.stroke();
+
+}
+
 function plotFunction(func, color)
 {
     const canvas = document.getElementById("plotCanvas");
@@ -67,37 +113,27 @@ function plotFunction(func, color)
 
     const aspect = canvas.width / canvas.height;
     const tMin = -aspect * plotScale;
+    const deltaT = 2 * plotScale * aspect / canvas.width;
     const yMax = plotScale * (1 + 10 / canvas.height);
-    let yPrev = 0;
+
+    func = func.replace(/\bt\b/g, "(t * deltaT + tMin)")
+    const y = Array.from({ length: canvas.width }, (_, t) => eval(func));
 
     ctx.beginPath();
 
-    for (let drawX = -1; drawX <= canvas.width + 1; drawX += 0.5)
+    let outOfBounds = false;
+    for (let drawX = 0; drawX < canvas.width; drawX++)
     {
-        const t = tMin + 2 * plotScale * aspect * drawX / canvas.width;
-        const y = eval(func);
-        const drawY = Math.min(
-            Math.max(
-                (canvas.height / 2) - (y * canvas.height) / (plotScale * 2),
-                -1
-            ),
-            canvas.height + 1
-        );
-
-        if (
-            (
-                (drawY < 0 || drawY > canvas.height)
-             && (yPrev < 0 || yPrev > canvas.height)
-            )
-         || drawX == -1
-        )
+        const drawY = Math.min(Math.max(
+            ((canvas.height / 2) * (1 - (y[drawX] / plotScale)))
+        , -1), canvas.height + 1);
+        if (outOfBounds && (drawY < 0 || drawY > canvas.height))
             ctx.moveTo(drawX, drawY);
         else
             ctx.lineTo(drawX, drawY);
-
-        yPrev = drawY;
+        outOfBounds = (drawY < 0 || drawY > canvas.height);
     }
-
+   
     ctx.strokeStyle = color;
     ctx.lineWidth = 5;
     ctx.stroke();
@@ -114,6 +150,7 @@ function drawPlotCanvas()
     drawPlotGrid();
     plotFunction(inputGt, "orange");
     plotFunction(inputFt, "red");
+    plotConvolution(inputFt, inputGt);
 }
 
 function zoomPlot(event)

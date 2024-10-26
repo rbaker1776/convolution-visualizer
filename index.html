@@ -7,10 +7,21 @@
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <input type="text" id="functionInput" placeholder="Enter a function of x (e.g., Math.sin(t))" value="Math.tan(t)">
-    <button onclick="plotFunction()">Plot Function</button>
-    <br><br>
     <canvas id="plotCanvas" width="400" height="400"></canvas>
+    <hr class="functionHr">
+    <div class="functionInput">
+        <p class="functionLabel">f(t) =<p>
+        <input type="text" class="functionText" id="fInput" placeholder="t * u(t) * u(2-t)" value="t * u(t) * u(2-t)">
+        <!--<button onclick="drawPlotCanvas()">Plot Function</button>-->
+    </div>
+    <hr class="functionHr">
+    <div class="functionInput">
+        <p class="functionLabel">g(t) =<p>
+        <input type="text" class="functionText" id="gInput" placeholder="e^(-t/2) * u(t)" value="e^(-t/2) * u(t)">
+        <!--<button onclick="drawPlotCanvas()">Plot Function</button>-->
+    </div>
+    <hr class="functionHr">
+    <script src="function.js"></script>
     <script src="core.js"></script>
 </body>
 </html>

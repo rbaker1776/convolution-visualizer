@@ -1,5 +1,5 @@
 
-
+const e = Math.exp(1);
 
 function drawPlotGrid()
 {
@@ -57,42 +57,63 @@ function resizePlotCanvas()
 
     ctx.scale(window, window.devicePixelRatio, window.devicePixelRatio);
 
-    plotFunction();
+    drawPlotCanvas();
 }
 
-function plotFunction()
+function plotFunction(func, color)
 {
     const canvas = document.getElementById("plotCanvas");
     const ctx = canvas.getContext("2d");
-    const inputFx = document.getElementById("functionInput").value;
-
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    drawPlotGrid();
-
-    ctx.beginPath();
 
     const aspect = canvas.width / canvas.height;
     const tMin = -aspect * plotScale;
     const yMax = plotScale * (1 + 10 / canvas.height);
     let yPrev = 0;
 
+    ctx.beginPath();
+
     for (let drawX = -1; drawX <= canvas.width + 1; drawX += 0.5)
     {
         const t = tMin + 2 * plotScale * aspect * drawX / canvas.width;
-        const f_t = Math.min(Math.max(eval(inputFx), -yMax), yMax);
-        const y = (canvas.height / 2) - (f_t * canvas.height) / (plotScale * 2);
+        const y = eval(func);
+        const drawY = Math.min(
+            Math.max(
+                (canvas.height / 2) - (y * canvas.height) / (plotScale * 2),
+                -1
+            ),
+            canvas.height + 1
+        );
 
-        if (((y < 0 || y > canvas.height) && (yPrev < 0 || yPrev > canvas.height)) || drawX == -1)
-            ctx.moveTo(drawX, y);
+        if (
+            (
+                (drawY < 0 || drawY > canvas.height)
+             && (yPrev < 0 || yPrev > canvas.height)
+            )
+         || drawX == -1
+        )
+            ctx.moveTo(drawX, drawY);
         else
-            ctx.lineTo(drawX, y);
+            ctx.lineTo(drawX, drawY);
 
-        yPrev = y;
+        yPrev = drawY;
     }
-   
-    ctx.strokeStyle = "red";
+
+    ctx.strokeStyle = color;
     ctx.lineWidth = 5;
     ctx.stroke();
+}
+
+function drawPlotCanvas()
+{
+    const canvas = document.getElementById("plotCanvas");
+    const ctx = canvas.getContext("2d");
+    const inputFt = parse(document.getElementById("fInput").value);
+    const inputGt = parse(document.getElementById("gInput").value)
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    drawPlotGrid();
+    plotFunction(inputGt, "orange");
+    plotFunction(inputFt, "red");
 }
 
 function zoomPlot(event)
@@ -107,7 +128,7 @@ function zoomPlot(event)
     else
         plotScale /= Math.max(1 - event.deltaY / 100);
 
-    plotFunction();
+    drawPlotCanvas();
 }
 
 var plotScale = 5;
@@ -115,5 +136,13 @@ var plotScale = 5;
 document.getElementById("plotCanvas").addEventListener("wheel", zoomPlot);
 
 window.addEventListener("resize", resizePlotCanvas);
+
+document.getElementById("fInput").addEventListener("keydown", function(event) {
+        setTimeout(drawPlotCanvas, 100);
+});
+
+document.getElementById("gInput").addEventListener("keydown", function(event) {
+        setTimeout(drawPlotCanvas, 100);
+});
 
 resizePlotCanvas();

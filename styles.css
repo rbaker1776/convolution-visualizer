@@ -15,6 +15,34 @@ canvas {
     height: 400px;
 }
 
-#functionInput {
-    color: white;
+.functionHr {
+    margin-top: 0;
+    border: none;
+    border-top: 1px solid gray;
+}
+
+.functionInput {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: 3rem;
+    margin-right: 3rem;
+    padding: 1rem 0;
+}
+
+.functionText {
+    width: calc(100vw - 12rem);
+    font-family: "Cambria Math", "Georgia", "Times", serif;
+    font-size: 24pt;
+    color: #eeeeee;
+    border: none;
+}
+
+.functionLabel {
+    color: gray;
+    font-family: "Cambria Math", "Georgia", "Times", serif;
+    font-size: 24pt;
+    font-style: italic;
+    margin-right: 0.75rem;
+    border: none;
 }

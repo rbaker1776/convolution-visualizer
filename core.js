@@ -91,7 +91,7 @@ function convolve(ft, gt)
     const tMin = -plotAspect * plotScale;
     const deltaT = -2 * plotScale * plotAspect / plotCanvas.width;
 
-    return Array.from(
+    let convolution = Array.from(
         { length: ft.length + gt.length - 1 },
         (_, t) => {
             let sum = 0;
@@ -99,7 +99,9 @@ function convolve(ft, gt)
                 sum -= ft[t - T] * gt[T] * deltaT;
             return sum;
         }
-    ).slice(ft.length / 2, ft.length * 3 / 2); 
+    ).slice(Math.floor(ft.length / 2), Math.floor(ft.length * 3 / 2)); 
+
+    return convolution;
 }
 
 function drawPlotCanvas()
@@ -126,7 +128,7 @@ function drawPlotCanvas()
 function resizePlotCanvas()
 {
     const width = window.innerWidth;
-    const height = 400;
+    const height = 600;
 
     plotCanvas.width = width * window.devicePixelRatio;
     plotCanvas.height = height * window.devicePixelRatio;

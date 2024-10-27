@@ -12,13 +12,20 @@
     <div class="functionInput">
         <p class="functionLabel">f(t) =<p>
         <input type="text" class="functionText" id="fInput" placeholder="t * u(t) * u(2-t)" value="t * u(t) * u(2-t)">
-        <!--<button onclick="drawPlotCanvas()">Plot Function</button>-->
     </div>
     <hr class="functionHr">
     <div class="functionInput">
         <p class="functionLabel">g(t) =<p>
         <input type="text" class="functionText" id="gInput" placeholder="e^(-t/2) * u(t)" value="e^(-t/2) * u(t)">
-        <!--<button onclick="drawPlotCanvas()">Plot Function</button>-->
+        <select class="functionOptions "id="gOptions" name="gOptions">
+            <option value="option1">Unit Step</option>
+            <option value="option2">Pulse</option>
+            <option value="option3">Exponential Decay</option>
+            <option value="option4">Triangle</option>
+            <option value="option5">Damped Sine</option>
+            <option value="option6">Biphasic</option>
+            <option value="option7">Triphasic</option>
+        </select>
     </div>
     <hr class="functionHr">
     <script src="function.js"></script>

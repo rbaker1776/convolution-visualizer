@@ -31,11 +31,12 @@ canvas {
 }
 
 .functionText {
-    width: calc(100vw - 12rem);
+    width: calc(100vw - 24rem);
     font-family: "Cambria Math", "Georgia", "Times", serif;
     font-size: 24pt;
     color: #eeeeee;
     border: none;
+    margin-right: 0;
 }
 
 .functionLabel {
@@ -45,4 +46,15 @@ canvas {
     font-style: italic;
     margin-right: 0.75rem;
     border: none;
+}
+
+.functionOptions {
+    color: #eeeeee;
+    margin: 0;
+    padding: 0;
+    border: none;
+    width: 10rem;
+    font-family: "Helvetica", "Roboto", sans-serif; 
+    font-size: 12pt;
+    margin-left: 1rem;
 }

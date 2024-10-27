@@ -28,6 +28,5 @@ function parse(inputFunc)
         .replace(/\blog2\b/g, "Math.log2")
         .replace(/\bpow\b/g, "Math.pow")
         .replace(/\^/g, "**")
-        .replace(/(\d+)t/g, "$1*t")
 }
 

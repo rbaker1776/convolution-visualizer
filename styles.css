@@ -58,3 +58,78 @@ canvas {
     font-size: 12pt;
     margin-left: 1rem;
 }
+
+#canvasContainer {
+    position: relative;
+    display: inline-block;
+}
+
+.legend {
+    position: absolute;
+    bottom: 1rem;
+    left: 1.6rem;
+    color: #eeeeee;
+    background: rgba(5, 5, 5, 0);
+    padding: 0.5rem;
+    font-family: "Cambria Math", "Georgia", "Times", serif;
+    font-size: 16pt;
+    text-align: left; 
+}
+
+.legend-item {
+    display: flex;
+    margin: 0.2rem;
+    align-items: center;
+}
+
+.legend-item, 
+.legend-item * {
+    background: transparent;
+}
+
+.color-box {
+    height: 2pt;
+    width: 12pt;
+    margin-right: 0.4rem;
+    margin-left: 0.4rem;
+}
+
+.custom-checkbox {
+    position: relative;
+    cursor: pointer;
+    padding-left: 30px;
+    line-height: 20px;
+    margin-right: 0.4rem;
+}
+
+.custom-checkbox input {
+    position: absolute;
+    cursor: pointer;
+    opacity: 0;
+}
+
+.checkmark {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 15pt;
+    width: 15pt;
+    border-radius: 3pt;
+}
+
+.custom-checkbox .checkmark {
+    background-color: transparent;
+    border: 1pt solid;
+}
+
+.red-checkbox input:checked ~ .checkmark {
+    background-color: red;
+}
+
+.orange-checkbox input:checked ~ .checkmark {
+    background-color: orange;
+}
+
+.cyan-checkbox input:checked ~ .checkmark {
+    background-color: cyan;
+}

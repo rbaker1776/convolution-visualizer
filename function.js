@@ -27,6 +27,9 @@ function parse(inputFunc)
         .replace(/\blog10\b/g, "Math.log10")
         .replace(/\blog2\b/g, "Math.log2")
         .replace(/\bpow\b/g, "Math.pow")
+        .replace(/\bfloor\b/g, "Math.floor")
+        .replace(/\bceil\b/g, "Math.ceil")
+        .replace(/\bpow\b/g, "Math.pow")
         .replace(/\^/g, "**")
 }
 

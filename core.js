@@ -115,9 +115,12 @@ function drawPlotCanvas()
     const gt = evaluate(inputGtField.value);
     const convolution = convolve(ft, gt);
 
-    plotFunction(gt, "orange");
-    plotFunction(ft, "red");
-    plotFunction(convolution, "cyan");
+    if (displayGtBox.checked)
+        plotFunction(gt, "orange");
+    if (displayFtBox.checked)
+        plotFunction(ft, "red");
+    if (displayConvolutionBox.checked)
+        plotFunction(convolution, "cyan");
 }
 
 function resizePlotCanvas()
@@ -146,7 +149,33 @@ function zoomPlot(event)
     drawPlotCanvas();
 }
 
+function dropdownFunc(selection)
+{
+    switch (selection)
+    {
+        case "unitStep":    return "u(t)";
+        case "pulse":       return "u(t) - u(t-1)";
+        case "expDecay":    return "exp(-t) * u(t)";
+        case "triangle":    return "t * u(t) * u(1-t) + (2-t) * u(t-1) * u(2-t)";
+        case "dampedSine":  return "sin(4*t) * exp(-t) * u(t)";
+        case "dampedSq":    return "(-1)^floor(2*t) * exp(-floor(2*t)/2) * u(t)"
+        case "biphasic":    return "exp(-t) * (u(t) * u(1-t) - u(t-1) * u(2-t))";
+        case "triphasic":   return "exp(-t/2) * (u(t) * u(1-t) - u(t-1) * u(2-t) + u(t-2) * u(3-t))";
+        default: return "";
+    }
+
+}
+
 const e = Math.exp(1);
+
+function dd(t)
+{
+    const deltaT = plotScale * plotAspect * 2 / plotCanvas.width;
+    return ((
+        (Math.abs(t + deltaT) >= Math.abs(t))
+     && (Math.abs(t - deltaT) >= Math.abs(t))
+    ) ? (1 / deltaT) : 0);
+}
 
 const plotCanvas = document.getElementById("plotCanvas");
 const plotCtx = plotCanvas.getContext("2d");
@@ -157,15 +186,48 @@ var plotScale = 5;
 const inputFtField = document.getElementById("fInput");
 const inputGtField = document.getElementById("gInput");
 
+const optionsFt = document.getElementById("fOptions");
+const optionsGt = document.getElementById("gOptions");
+
+const displayFtBox = document.getElementById("toggleFt");
+const displayGtBox = document.getElementById("toggleGt");
+const displayConvolutionBox = document.getElementById("toggleConvolution");
+
 plotCanvas.addEventListener("wheel", zoomPlot);
 
 window.addEventListener("resize", resizePlotCanvas);
 
-document.getElementById("fInput").addEventListener("keydown", function(event) {
+inputFtField.addEventListener("keydown", function(event) {
+    optionsFt.value = "default"; 
     setTimeout(drawPlotCanvas, 100);
 });
 
-document.getElementById("gInput").addEventListener("keydown", function(event) {
+inputGtField.addEventListener("keydown", function(event) {
+    optionsGt.value = "default"; 
+    setTimeout(drawPlotCanvas, 100);
+});
+
+optionsFt.addEventListener("change", function() {
+    const selection = optionsFt.value;
+    inputFtField.value = dropdownFunc(selection);
+    drawPlotCanvas();
+});
+
+optionsGt.addEventListener("change", function() {
+    const selection = optionsGt.value;
+    inputGtField.value = dropdownFunc(selection);
+    drawPlotCanvas();
+});
+
+displayFtBox.addEventListener("change", (event) => {
+    setTimeout(drawPlotCanvas, 100);
+});
+
+displayGtBox.addEventListener("change", (event) => {
+    setTimeout(drawPlotCanvas, 100);
+});
+
+displayConvolutionBox.addEventListener("change", (event) => {
     setTimeout(drawPlotCanvas, 100);
 });
 

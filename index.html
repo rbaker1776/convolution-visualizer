@@ -7,10 +7,13 @@
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
+    <header>
+        <h1 style="color: #eeeeee;">Convolution Visualizer</h1>
+    </header>
     <div id="canvasContainer">
         <canvas id="plotCanvas" height="400"></canvas>
         <div class="legend">
-            <div class="legend-item">
+            <div class="legendItem">
                 <div class="checkbox-container">
                     <label class="custom-checkbox red-checkbox">
                         <input type="checkbox" id="toggleFt" checked>
@@ -19,7 +22,7 @@
                 </div>            
                 <span>f(t)</span>
             </div>
-            <div class="legend-item">
+            <div class="legendItem">
                 <div class="checkbox-container">
                     <label class="custom-checkbox orange-checkbox">
                         <input type="checkbox" id="toggleGt" checked>
@@ -28,7 +31,7 @@
                 </div>            
                 <span>g(t)</span>
             </div>
-            <div class="legend-item">
+            <div class="legendItem">
                 <div class="checkbox-container">
                     <label class="custom-checkbox cyan-checkbox">
                         <input type="checkbox" id="toggleConvolution" checked>
@@ -73,6 +76,9 @@
     </div>
     <hr class="functionHr">
     <canvas id="slideCanvas" width="400" height="400"></canvas>
+    <div class="slider">
+        
+    </div>
     <script src="function.js"></script>
     <script src="core.js"></script>
 </body>

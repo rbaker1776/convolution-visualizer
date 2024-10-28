@@ -12,7 +12,7 @@ class Plotter
 
         this.resize = this.resize.bind(this);
         this.zoom = this.zoom.bind(this);
-        this.callUpdate = this.callUpdate.bind(this);
+        this.redraw = this.redraw.bind(this);
     }
 
     drawAxes()
@@ -68,7 +68,7 @@ class Plotter
 
         for (let i = 0; i < func.length; ++i)
         {
-            const drawX = i / (func.length / this.canvas.width);
+            const drawX = i;
             const drawY = Math.min(Math.max(
                 ((this.canvas.height / 2) * (1 - func[i] / this.scale))
             , -1), this.canvas.height + 1);
@@ -89,7 +89,7 @@ class Plotter
         this.ctx.stroke();
     }
 
-    callUpdate()
+    redraw()
     {
         return this.update.call(this);
     }
@@ -105,19 +105,22 @@ class Plotter
 
         this.ctx.scale(window, window.devicePixelRatio, window.devicePixelRatio);
 
-        this.callUpdate();
+        this.redraw();
     }
 
     zoom(event)
     {
         event.preventDefault();
 
-        if (event.deltaY > 0)
-            this.scale *= Math.max(1 + event.deltaY / 100);
-        else
-            this.scale /= Math.max(1 - event.deltaY / 100);
+        const minScale = 1;
+        const maxScale = 10;
 
-        this.callUpdate();
+        if (event.deltaY > 0 && this.scale < maxScale)
+            this.scale *= Math.min(1 + event.deltaY / 1000, maxScale / this.scale);
+        else if (event.deltaY < 0 && this.scale > minScale)
+            this.scale /= Math.min(1 - event.deltaY / 1000, this.scale / minScale);
+
+        this.redraw();
     }
 }
 
@@ -161,7 +164,6 @@ function dropdownFunc(selection)
         case "triphasic":   return "exp(-t/2) * (u(t) * u(1-t) - u(t-1) * u(2-t) + u(t-2) * u(3-t))";
         default: return "";
     }
-
 }
 
 functionPlotter = new Plotter(document.getElementById("plotCanvas"), function() {
@@ -172,29 +174,90 @@ functionPlotter = new Plotter(document.getElementById("plotCanvas"), function() 
     this.drawAxes();
     this.drawGrid();
     
-    const tMin = -this.aspect * this.scale;
-    const deltaT = -2 * tMin / this.canvas.width;
+    const expansionFactor = 2;
+
+    const tMin = -expansionFactor * this.aspect * this.scale;
+    const deltaT = -2 * tMin / (this.canvas.width * expansionFactor);
 
     const ft = evaluate(inputFtField.value, tMin, -tMin, deltaT);
     const gt = evaluate(inputGtField.value, tMin, -tMin, deltaT);
     const convolution = convolve(ft, gt, deltaT);
 
+    const beginIdx = ft.length * (1 / 2 - 1 / (2 * expansionFactor));
+    const endIdx = ft.length * (1 / 2 + 1 / (2 * expansionFactor));
+
     if (displayGtBox.checked)
-        this.plotFunction(gt, "orange");
+        this.plotFunction(gt.slice(beginIdx, endIdx), "orange");
     if (displayFtBox.checked)
-        this.plotFunction(ft, "red");
+        this.plotFunction(ft.slice(beginIdx, endIdx), "red");
     if (displayConvolutionBox.checked)
-        this.plotFunction(convolution, "cyan");
+        this.plotFunction(convolution.slice(beginIdx, endIdx), "cyan");
+});
+
+slidePlotter = new Plotter(document.getElementById("slideCanvas"), function() {
+    const inputFt = parse(document.getElementById("fInput").value)
+    const inputGt = parse(document.getElementById("gInput").value)
+
+    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    this.drawAxes();
+    this.drawGrid();
+    
+    const expansionFactor = 2;
+
+    const tMin = -expansionFactor * this.aspect * this.scale;
+    const deltaT = -2 * tMin / (this.canvas.width * expansionFactor);
+    const tOffset = 0.5;
+
+    const ft = evaluate(inputFtField.value, tMin, -tMin, deltaT);
+    const gt = evaluate(inputGtField.value, tMin, -tMin, deltaT);
+    const convolution = convolve(ft, gt, deltaT);
+
+    const beginIdx = ft.length * (1 / 2 - 1 / (2 * expansionFactor));
+    const endIdx = ft.length * (1 / 2 + 1 / (2 * expansionFactor));
+
+    const ftTrimmed = ft.slice(beginIdx, endIdx);
+    const gtBackwards = Array.from(
+        { length: gt.length / expansionFactor},
+        (_, i) => gt[Math.floor(endIdx + tOffset / deltaT) - i]
+    );
+
+    this.ctx.beginPath();
+
+    for (let i = 0; i < ftTrimmed.length; i++)
+    {
+        if (ftTrimmed[i] != 0 && gtBackwards[i] != 0)
+        {
+            this.ctx.moveTo(i, this.canvas.height / 2);
+            const drawY = Math.min(Math.max(
+                ((this.canvas.height / 2) * (1 - (ftTrimmed[i] * gtBackwards[i]) / this.scale))
+            , -1), this.canvas.height + 1);
+
+            if (
+                (drawY == this.canvas.height + 1 || drawY == -1)
+             && (yPrev == this.canvas.height + 1 || yPrev == -1)
+            )
+                this.ctx.moveTo(i, drawY);
+            else
+                this.ctx.lineTo(i, drawY);
+        }
+    }
+
+    this.ctx.strokeStyle = "rgba(0, 255, 255, 0.2)";
+    this.ctx.lineWidth = 1;
+    this.ctx.stroke();
+
+    this.plotFunction(gtBackwards, "orange");
+    this.plotFunction(ftTrimmed, "red");
+    this.plotFunction(convolution.slice(beginIdx, endIdx), "cyan");
 });
 
 const e = Math.exp(1);
 
 function dd(t)
 {
-    const deltaT = 2 * functionPlotter.aspect * functionPlotter.scale / functionPlotter.canvas.width;
     return ((
-        Math.round(t / deltaT) == 0
-    ) ? (1 / deltaT) : 0);
+        t == 0 
+    ) ? (1 / 0.00001) : 0);
 }
 
 const inputFtField = document.getElementById("fInput");
@@ -208,44 +271,54 @@ const displayGtBox = document.getElementById("toggleGt");
 const displayConvolutionBox = document.getElementById("toggleConvolution");
 
 functionPlotter.canvas.addEventListener("wheel", functionPlotter.zoom);
+slidePlotter.canvas.addEventListener("wheel", slidePlotter.zoom);
 
 window.addEventListener("resize", function() {
     functionPlotter.resize();
+    slidePlotter.resize();
 });
 
 inputFtField.addEventListener("keydown", function(event) {
     optionsFt.value = "default"; 
-    setTimeout(functionPlotter.callUpdate, 100);
+    setTimeout(functionPlotter.redraw, 100);
+    setTimeout(slidePlotter.redraw, 100);
 });
 
 inputGtField.addEventListener("keydown", function(event) {
     optionsGt.value = "default"; 
-    setTimeout(functionPlotter.callUpdate, 100);
+    setTimeout(functionPlotter.redraw, 100);
+    setTimeout(slidePlotter.redraw, 100);
 });
 
 optionsFt.addEventListener("change", function() {
     const selection = optionsFt.value;
     inputFtField.value = dropdownFunc(selection);
-    functionPlotter.callUpdate();
+    functionPlotter.redraw();
+    slidePlotter.redraw();
 });
 
 optionsGt.addEventListener("change", function() {
     const selection = optionsGt.value;
     inputGtField.value = dropdownFunc(selection);
-    functionPlotter.callUpdate();
+    functionPlotter.redraw();
+    slidePlotter.redraw();
 });
 
 displayFtBox.addEventListener("change", (event) => {
-    setTimeout(functionPlotter.callUpdate, 100);
+    setTimeout(functionPlotter.redraw, 100);
+    setTimeout(slidePlotter.redraw, 100);
 });
 
 displayGtBox.addEventListener("change", (event) => {
-    setTimeout(functionPlotter.callUpdate, 100);
+    setTimeout(functionPlotter.redraw, 100);
+    setTimeout(slidePlotter.redraw, 100);
 });
 
 displayConvolutionBox.addEventListener("change", (event) => {
-    setTimeout(functionPlotter.callUpdate, 100);
+    setTimeout(functionPlotter.redraw, 100);
+    setTimeout(slidePlotter.redraw, 100);
 });
 
 
 functionPlotter.resize();
+slidePlotter.resize();

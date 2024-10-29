@@ -30,6 +30,8 @@ function parse(inputFunc)
         .replace(/\bfloor\b/g, "Math.floor")
         .replace(/\bceil\b/g, "Math.ceil")
         .replace(/\bpow\b/g, "Math.pow")
+        .replace(/\bmin\b/g, "Math.min")
+        .replace(/\bmax\b/g, "Math.max")
         .replace(/\^/g, "**")
 }
 

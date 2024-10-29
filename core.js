@@ -1,17 +1,17 @@
 
 
+const plotScale = 1.5;
+
 class Plotter
 {
     constructor(canvas, updateFunc)
     {
         this.canvas = canvas;
         this.ctx = canvas.getContext("2d");
-        this.scale = 5;
         this.aspect = canvas.width / canvas.height;
         this.update = updateFunc;
 
         this.resize = this.resize.bind(this);
-        this.zoom = this.zoom.bind(this);
         this.redraw = this.redraw.bind(this);
     }
 
@@ -33,22 +33,22 @@ class Plotter
     {
         this.ctx.beginPath();
        
-        const interval = Math.pow(10, Math.floor(Math.log10(this.scale)));
+        const interval = Math.pow(10, Math.floor(Math.log10(plotScale)));
 
-        for (let i = 1; i <= Math.floor(this.scale * this.aspect / interval); i++)
+        for (let i = 1; i <= Math.floor(plotScale * this.aspect / interval); i++)
         {
-            const drawXR = (this.canvas.width / 2) + (i * interval) * (this.canvas.height / (2 * this.scale));
-            const drawXL = (this.canvas.width / 2) - (i * interval) * (this.canvas.height / (2 * this.scale));
+            const drawXR = (this.canvas.width / 2) + (i * interval) * (this.canvas.height / (2 * plotScale));
+            const drawXL = (this.canvas.width / 2) - (i * interval) * (this.canvas.height / (2 * plotScale));
             this.ctx.moveTo(drawXR, 0);
             this.ctx.lineTo(drawXR, this.canvas.height);
             this.ctx.moveTo(drawXL, 0);
             this.ctx.lineTo(drawXL, this.canvas.height);
         }
 
-        for (let i = 1; i <= Math.floor(this.scale / interval); i++)
+        for (let i = 1; i <= Math.floor(plotScale / interval); i++)
         {
-            const drawYT = (this.canvas.height / 2) + (i * interval) * (this.canvas.height / (2 * this.scale));
-            const drawYB = (this.canvas.height / 2) - (i * interval) * (this.canvas.height / (2 * this.scale));
+            const drawYT = (this.canvas.height / 2) + (i * interval) * (this.canvas.height / (2 * plotScale));
+            const drawYB = (this.canvas.height / 2) - (i * interval) * (this.canvas.height / (2 * plotScale));
             this.ctx.moveTo(0, drawYT);
             this.ctx.lineTo(this.canvas.width, drawYT);
             this.ctx.moveTo(0, drawYB);
@@ -62,7 +62,7 @@ class Plotter
 
     plotFunction(func, color)
     {
-        let yPrev = (this.canvas.height / 2) * (1 - func[0] / this.scale);
+        let yPrev = (this.canvas.height / 2) * (1 - func[0] / plotScale);
         this.ctx.beginPath();
         this.ctx.moveTo(-1, yPrev);
 
@@ -70,16 +70,10 @@ class Plotter
         {
             const drawX = i;
             const drawY = Math.min(Math.max(
-                ((this.canvas.height / 2) * (1 - func[i] / this.scale))
-            , -1), this.canvas.height + 1);
+                ((this.canvas.height / 2) * (1 - func[i] / plotScale))
+            , -3), this.canvas.height + 3);
 
-            if (
-                (drawY == this.canvas.height + 1 || drawY == -1)
-             && (yPrev == this.canvas.height + 1 || yPrev == -1)
-            )
-                this.ctx.moveTo(drawX, drawY);
-            else
-                this.ctx.lineTo(drawX, drawY);
+            this.ctx.lineTo(drawX, drawY);
 
             yPrev = drawY;
         }
@@ -89,15 +83,12 @@ class Plotter
         this.ctx.stroke();
     }
 
-    redraw()
-    {
-        return this.update.call(this);
-    }
+    redraw() { return this.update.call(this); }
 
     resize()
     {
         const width = window.innerWidth;
-        const height = 400;
+        const height = 300;
 
         this.canvas.width = width * window.devicePixelRatio;
         this.canvas.height = height * window.devicePixelRatio;
@@ -107,27 +98,12 @@ class Plotter
 
         this.redraw();
     }
-
-    zoom(event)
-    {
-        event.preventDefault();
-
-        const minScale = 1;
-        const maxScale = 10;
-
-        if (event.deltaY > 0 && this.scale < maxScale)
-            this.scale *= Math.min(1 + event.deltaY / 1000, maxScale / this.scale);
-        else if (event.deltaY < 0 && this.scale > minScale)
-            this.scale /= Math.min(1 - event.deltaY / 1000, this.scale / minScale);
-
-        this.redraw();
-    }
 }
 
 function evaluate(func, tMin, tMax, deltaT)
 {
-    func = func.replace(/\bt\b/g, "(t * deltaT + tMin)");
     func = parse(func);
+    func = func.replace(/\bt\b/g, "(t * deltaT + tMin)");
 
     return Array.from(
         { length: Math.ceil((tMax - tMin) / deltaT) },
@@ -157,7 +133,7 @@ function dropdownFunc(selection)
         case "unitStep":    return "u(t)";
         case "pulse":       return "u(t) - u(t-1)";
         case "expDecay":    return "exp(-t) * u(t)";
-        case "triangle":    return "t * u(t) * u(1-t) + (2-t) * u(t-1) * u(2-t)";
+        case "triangle":    return "(1 - abs(t-1)) * u(t) * u(2-t)";
         case "dampedSine":  return "sin(4*t) * exp(-t) * u(t)";
         case "dampedSq":    return "(-1)^floor(2*t) * exp(-floor(2*t)/2) * u(t)"
         case "biphasic":    return "exp(-t) * (u(t) * u(1-t) - u(t-1) * u(2-t))";
@@ -176,7 +152,7 @@ functionPlotter = new Plotter(document.getElementById("plotCanvas"), function() 
     
     const expansionFactor = 2;
 
-    const tMin = -expansionFactor * this.aspect * this.scale;
+    const tMin = -expansionFactor * this.aspect * plotScale;
     const deltaT = -2 * tMin / (this.canvas.width * expansionFactor);
 
     const ft = evaluate(inputFtField.value, tMin, -tMin, deltaT);
@@ -204,9 +180,9 @@ slidePlotter = new Plotter(document.getElementById("slideCanvas"), function() {
     
     const expansionFactor = 2;
 
-    const tMin = -expansionFactor * this.aspect * this.scale;
+    const tMin = -expansionFactor * this.aspect * plotScale;
     const deltaT = -2 * tMin / (this.canvas.width * expansionFactor);
-    const tOffset = 0.5;
+    const tOffset = tOffsetSlider.value;
 
     const ft = evaluate(inputFtField.value, tMin, -tMin, deltaT);
     const gt = evaluate(inputGtField.value, tMin, -tMin, deltaT);
@@ -229,20 +205,14 @@ slidePlotter = new Plotter(document.getElementById("slideCanvas"), function() {
         {
             this.ctx.moveTo(i, this.canvas.height / 2);
             const drawY = Math.min(Math.max(
-                ((this.canvas.height / 2) * (1 - (ftTrimmed[i] * gtBackwards[i]) / this.scale))
+                ((this.canvas.height / 2) * (1 - (ftTrimmed[i] * gtBackwards[i]) / plotScale))
             , -1), this.canvas.height + 1);
 
-            if (
-                (drawY == this.canvas.height + 1 || drawY == -1)
-             && (yPrev == this.canvas.height + 1 || yPrev == -1)
-            )
-                this.ctx.moveTo(i, drawY);
-            else
-                this.ctx.lineTo(i, drawY);
+            this.ctx.lineTo(i, drawY);
         }
     }
 
-    this.ctx.strokeStyle = "rgba(0, 255, 255, 0.2)";
+    this.ctx.strokeStyle = "rgba(0, 255, 255, 0.3)";
     this.ctx.lineWidth = 1;
     this.ctx.stroke();
 
@@ -255,9 +225,10 @@ const e = Math.exp(1);
 
 function dd(t)
 {
+    const deltaT = functionPlotter.aspect * plotScale / functionPlotter.canvas.width;
     return ((
-        t == 0 
-    ) ? (1 / 0.00001) : 0);
+        Math.abs(t) < deltaT / 2
+    ) ? (1 / (2 * deltaT)) : 0);
 }
 
 const inputFtField = document.getElementById("fInput");
@@ -270,8 +241,10 @@ const displayFtBox = document.getElementById("toggleFt");
 const displayGtBox = document.getElementById("toggleGt");
 const displayConvolutionBox = document.getElementById("toggleConvolution");
 
-functionPlotter.canvas.addEventListener("wheel", functionPlotter.zoom);
-slidePlotter.canvas.addEventListener("wheel", slidePlotter.zoom);
+const tOffsetSlider = document.getElementById("tOffsetSlider");
+
+//functionPlotter.canvas.addEventListener("wheel", functionPlotter.zoom);
+//slidePlotter.canvas.addEventListener("wheel", slidePlotter.zoom);
 
 window.addEventListener("resize", function() {
     functionPlotter.resize();
@@ -319,6 +292,9 @@ displayConvolutionBox.addEventListener("change", (event) => {
     setTimeout(slidePlotter.redraw, 100);
 });
 
+tOffsetSlider.addEventListener("input", (event) => {
+    setTimeout(slidePlotter.redraw, 100);
+});
 
 functionPlotter.resize();
 slidePlotter.resize();

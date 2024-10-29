@@ -17,7 +17,6 @@ body {
 
 canvas {
     width: 100%;
-    height: 400px;
 }
 
 .functionHr {
@@ -137,4 +136,12 @@ canvas {
 
 .cyan-checkbox input:checked ~ .checkmark {
     background-color: cyan;
+}
+
+#tOffsetSlider {
+    margin: 1rem;
+    width: 60vw;
+}
+
+#tOffsetLabel {
 }

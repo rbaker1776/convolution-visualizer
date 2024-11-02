@@ -6,8 +6,15 @@
 }
 
 header {
+    display: flex;
     padding: 1rem;
     font-size: 20pt;
+    align-content: center;
+    justify-content: space-between;
+}
+
+header h1 {
+    margin-left: 1rem;
 }
 
 body {
@@ -74,6 +81,7 @@ canvas {
     left: 1.6rem;
     color: #eeeeee;
     background: transparent;
+    pointer-events: none;
     padding: 0.5rem;
     font-size: 16pt;
     text-align: left; 
@@ -104,6 +112,7 @@ canvas {
     padding-left: 30px;
     line-height: 20px;
     margin-right: 0.4rem;
+    pointer-events: auto;
 }
 
 .custom-checkbox input {

@@ -101,7 +101,6 @@ class Plotter
         this.ctx.beginPath();
         this.ctx.moveTo(-1, yPrev);
 
-        console.log(ft.length - this.canvas.width);
         for (let i = 0; i < ft.length; ++i)
         {
             const drawX = i;
@@ -174,9 +173,24 @@ class Plotter
     }
 }
 
+const e = Math.exp(1);
+
+function dd(t, deltaT)
+{
+    return (
+        Math.abs(t) <= deltaT / 2
+      ? 1 / deltaT
+      : 0
+    );
+}
+
 function evaluate(func, tMin, tMax, deltaT)
 {
+    func = func.replace(/dd\(([^)]*)\)/g, (match, p1) => {
+        return `dd(${p1}, deltaT)`;
+    });
     func = func.replace(/\bt\b/g, "(t * deltaT + tMin)");
+    console.log(func);
     return Array.from(
         { length: Math.ceil((tMax - tMin) / deltaT) },
         (_, t) => eval(func)
@@ -194,6 +208,23 @@ function convolve(ft, gt, deltaT)
             return sum;
         }
     ).slice(Math.floor(ft.length / 2), Math.floor(ft.length * 3/2));
+}
+
+function dropdownSelect(selection)
+{
+    switch (selection)
+    {
+        case "unitStep":    return "u(t)";
+        case "pulse":       return "u(t) * u(1-t)";
+        case "impulse":     return "dd(t)";
+        case "expDecay":    return "exp(-t) * u(t)";
+        case "triangle":    return "(1 - abs(t-1)) * u(t) * u(2-t)";
+        case "dampedSine":  return "sin(4*t) * exp(-t) * u(t)";
+        case "dampedSq":    return "(-1)^floor(2*t) * exp(-floor(2*t)/2) * u(t)"
+        case "biphasic":    return "exp(-t) * (u(t) * u(1-t) - u(t-1) * u(2-t))";
+        case "triphasic":   return "exp(-t/2) * (u(t) * u(1-t) - u(t-1) * u(2-t) + u(t-2) * u(3-t))";
+        case "pulseTrain":  return "dd(t) - dd(t-1.2) + dd(t-2.4) - dd(t-3.6) + dd(t-4.8) - dd(t-6)";
+    }
 }
 
 function redrawFunctions()
@@ -214,19 +245,29 @@ function redrawFunctions()
     const convolution = convolve(ft, gt, deltaT);
     const beginIdx = Math.max(0, this.tToCanvasX(this.tMin + maxAbsT) - this.tToCanvasX(0));
 
-    this.plotFunction(gt.slice(
-        Math.max(0, gt.length * (1 - (-this.tMin + tMax) / (maxAbsT + tMax))),
-        Math.min(gt.length, gt.length * (tMax - this.tMin) / (maxAbsT - this.tMin))
-    ), "orange");
-    this.plotFunction(ft.slice(
-        Math.max(0, ft.length * (1 - (-this.tMin + tMax) / (maxAbsT + tMax))),
-        Math.min(ft.length, ft.length * (tMax - this.tMin) / (maxAbsT - this.tMin))
-    ), "red");
-    this.plotFunction(convolution.slice(beginIdx, beginIdx + this.canvas.width), "cyan");
+    if (displayGtBox.checked)
+        this.plotFunction(gt.slice(
+            Math.max(0, gt.length * (1 - (-this.tMin + tMax) / (maxAbsT + tMax))),
+            Math.min(gt.length, gt.length * (tMax - this.tMin) / (maxAbsT - this.tMin))
+        ), "orange");
+    if (displayFtBox.checked)
+        this.plotFunction(ft.slice(
+            Math.max(0, ft.length * (1 - (-this.tMin + tMax) / (maxAbsT + tMax))),
+            Math.min(ft.length, ft.length * (tMax - this.tMin) / (maxAbsT - this.tMin))
+        ), "red");
+    if (displayCvBox.checked)
+        this.plotFunction(convolution.slice(beginIdx, beginIdx + this.canvas.width), "cyan");
 }
 
 const inputFtField = document.getElementById("fInput");
 const inputGtField = document.getElementById("gInput");
+
+const optionsFt = document.getElementById("fOptions");
+const optionsGt = document.getElementById("gOptions");
+
+const displayFtBox = document.getElementById("toggleFt");
+const displayGtBox = document.getElementById("toggleGt");
+const displayCvBox = document.getElementById("toggleConvolution");
 
 const functionPlotter = new Plotter(document.getElementById("plotCanvas"), redrawFunctions);
 const plotters = [functionPlotter];
@@ -253,4 +294,38 @@ plotters.forEach((plotter, idx) => {
     window.addEventListener("resize", plotter.resize);
     
     plotter.resize();
+});
+
+inputFtField.addEventListener("keydown", (event) => {
+    optionsFt.value = "default";
+    setTimeout(functionPlotter.redraw, 100);
+});
+
+inputGtField.addEventListener("keydown", (event) => {
+    optionsGt.value = "default";
+    setTimeout(functionPlotter.redraw, 100);
+});
+
+optionsFt.addEventListener("change", () => {
+    const selection = optionsFt.value;
+    inputFtField.value = dropdownSelect(selection);
+    functionPlotter.redraw();
+});
+
+optionsGt.addEventListener("change", () => {
+    const selection = optionsGt.value;
+    inputGtField.value = dropdownSelect(selection);
+    functionPlotter.redraw();
+});
+
+displayFtBox.addEventListener("change", () => {
+    setTimeout(functionPlotter.redraw, 100);
+});
+
+displayGtBox.addEventListener("change", () => {
+    setTimeout(functionPlotter.redraw, 100);
+});
+
+displayCvBox.addEventListener("change", () => {
+    setTimeout(functionPlotter.redraw, 100);
 });

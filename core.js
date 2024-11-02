@@ -1,8 +1,4 @@
 
-const inputFtField = document.getElementById("fInput");
-const inputGtField = document.getElementById("gInput");
-
-
 class Plotter
 {
     constructor(canvas, redrawFunc)
@@ -21,7 +17,7 @@ class Plotter
         this.resize();
 
         this.isPanning = false;
-        this.tMin = -this.scale * this.aspectRatio / 2;
+        this.tMin = -this.scale * this.aspectRatio / 4; //-this.scale * this.aspectRatio / 2;
         this.fMax = this.scale / 2;
         this.prevT = 0;
         this.prevF = 0;
@@ -99,6 +95,26 @@ class Plotter
         this.ctx.stroke();
     }
 
+    plotFunction(ft, color)
+    {
+        let yPrev = this.fToCanvasY(ft[0]);
+        this.ctx.beginPath();
+        this.ctx.moveTo(-1, yPrev);
+
+        console.log(ft.length - this.canvas.width);
+        for (let i = 0; i < ft.length; ++i)
+        {
+            const drawX = i;
+            const drawY = Math.min(Math.max(this.fToCanvasY(ft[i]), -3), this.canvas.height + 3);
+            this.ctx.lineTo(drawX, drawY);
+            yPrev = drawY;
+        }
+
+        this.ctx.strokeStyle = color;
+        this.ctx.lineWidth = 5;
+        this.ctx.stroke();
+    }
+
     redraw() { return this.redrawFunc.call(this); }
 
     resize()
@@ -158,15 +174,59 @@ class Plotter
     }
 }
 
+function evaluate(func, tMin, tMax, deltaT)
+{
+    func = func.replace(/\bt\b/g, "(t * deltaT + tMin)");
+    return Array.from(
+        { length: Math.ceil((tMax - tMin) / deltaT) },
+        (_, t) => eval(func)
+    );
+}
+
+function convolve(ft, gt, deltaT)
+{
+    return Array.from(
+        { length: ft.length + gt.length - 1 },
+        (_, t) => {
+            let sum = 0;
+            for (let T = Math.max(0, t - (ft.length - 1)); T < Math.min(t, ft.length - 1); ++T)
+                sum += ft[t-T] * gt[T] * deltaT;
+            return sum;
+        }
+    ).slice(Math.floor(ft.length / 2), Math.floor(ft.length * 3/2));
+}
+
 function redrawFunctions()
 {
-    const inputFt = parse(inputFtField.value);
-    const inputGt = parse(inputGtField.value);
-
     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
     this.drawAxes();
     this.drawGrid();
+
+    const inputFt = parse(inputFtField.value);
+    const inputGt = parse(inputGtField.value);
+
+
+    const tMax = this.tMin + this.scale * this.aspectRatio;
+    const maxAbsT = Math.max(Math.abs(this.tMin), tMax);
+    const deltaT = (tMax - this.tMin) / this.canvas.width;
+    const ft = evaluate(inputFt, -maxAbsT, maxAbsT, deltaT);
+    const gt = evaluate(inputGt, -maxAbsT, maxAbsT, deltaT);
+    const convolution = convolve(ft, gt, deltaT);
+    const beginIdx = Math.max(0, this.tToCanvasX(this.tMin + maxAbsT) - this.tToCanvasX(0));
+
+    this.plotFunction(gt.slice(
+        Math.max(0, gt.length * (1 - (-this.tMin + tMax) / (maxAbsT + tMax))),
+        Math.min(gt.length, gt.length * (tMax - this.tMin) / (maxAbsT - this.tMin))
+    ), "orange");
+    this.plotFunction(ft.slice(
+        Math.max(0, ft.length * (1 - (-this.tMin + tMax) / (maxAbsT + tMax))),
+        Math.min(ft.length, ft.length * (tMax - this.tMin) / (maxAbsT - this.tMin))
+    ), "red");
+    this.plotFunction(convolution.slice(beginIdx, beginIdx + this.canvas.width), "cyan");
 }
+
+const inputFtField = document.getElementById("fInput");
+const inputGtField = document.getElementById("gInput");
 
 const functionPlotter = new Plotter(document.getElementById("plotCanvas"), redrawFunctions);
 const plotters = [functionPlotter];

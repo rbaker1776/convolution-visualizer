@@ -17,7 +17,7 @@ class Plotter
         this.resize();
 
         this.isPanning = false;
-        this.tMin = -this.scale * this.aspectRatio / 4; //-this.scale * this.aspectRatio / 2;
+        this.tMin = -this.scale * this.aspectRatio / (4 * window.devicePixelRatio);
         this.fMax = this.scale / 2;
         this.prevT = 0;
         this.prevF = 0;
@@ -30,7 +30,7 @@ class Plotter
 
     canvasYtoF(y)
     {
-        return this.fMax - (y / this.canvas.height) * this.scale;
+        return this.fMax - (y * window.devicePixelRatio / this.canvas.height) * this.scale;
     }
 
     tToCanvasX(t)
@@ -40,7 +40,7 @@ class Plotter
 
     fToCanvasY(f)
     {
-        return (this.fMax - f) / (this.scale) * this.canvas.height;
+        return (this.fMax - f) / (this.scale * window.devicePixelRatio) * this.canvas.height;
     }
 
     drawAxes()
@@ -62,6 +62,8 @@ class Plotter
 
     drawGrid()
     {
+        this.ctx.beginPath();
+
         const interval = Math.pow(10, Math.floor(Math.log10(this.scale / 2)));
 
         const tiMin = Math.floor(this.tMin / interval) * interval;
@@ -124,10 +126,10 @@ class Plotter
 
         this.canvas.width = width * window.devicePixelRatio;
         this.canvas.height = height * window.devicePixelRatio;
-        this.aspectRatio = width / height;
+        this.aspectRatio = width / height * window.devicePixelRatio;
         this.tMin = -p * this.scale * this.aspectRatio;
 
-        this.ctx.scale(window, window.devicePixelRatio, window.devicePixelRatio);
+        this.ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
         
         this.redraw();
     }
@@ -139,11 +141,11 @@ class Plotter
         const minScale = 2;
         const maxScale = 20;
 
-        const zoomT = this.canvasXtoT(2 * event.offsetX);
+        const zoomT = this.canvasXtoT(event.offsetX);
         const centerT = Math.abs(zoomT) < this.scale * this.aspectRatio / 20 ? 0 : zoomT;
         const ratioT = (centerT - this.tMin) / this.scale;
 
-        const zoomF = this.canvasYtoF(2 * event.offsetY);
+        const zoomF = this.canvasYtoF(event.offsetY);
         const centerF = Math.abs(zoomF) < this.scale / 20 ? 0 : zoomF;
         const ratioF = (this.fMax - centerF) / this.scale;
 
@@ -164,9 +166,9 @@ class Plotter
         if (!this.isPanning)
             return;
 
-        const t = this.canvasXtoT(2 * event.offsetX)
+        const t = this.canvasXtoT(event.offsetX)
         this.tMin += this.prevT - t;
-        const f = this.canvasYtoF(2 * event.offsetY)
+        const f = this.canvasYtoF(event.offsetY)
         this.fMax += this.prevF - f;
 
         this.redraw();
@@ -190,7 +192,6 @@ function evaluate(func, tMin, tMax, deltaT)
         return `dd(${p1}, deltaT)`;
     });
     func = func.replace(/\bt\b/g, "(t * deltaT + tMin)");
-    console.log(func);
     return Array.from(
         { length: Math.ceil((tMax - tMin) / deltaT) },
         (_, t) => eval(func)
@@ -230,8 +231,8 @@ function dropdownSelect(selection)
 function redrawFunctions()
 {
     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-    this.drawAxes();
     this.drawGrid();
+    this.drawAxes();
 
     const inputFt = parse(inputFtField.value);
     const inputGt = parse(inputGtField.value);
@@ -277,8 +278,8 @@ plotters.forEach((plotter, idx) => {
 
     plotter.canvas.addEventListener("mousedown", (event) => {
         plotter.isPanning = true;
-        plotter.prevT = plotter.canvasXtoT(2 * event.offsetX);
-        plotter.prevF = plotter.canvasYtoF(2 * event.offsetY);
+        plotter.prevT = plotter.canvasXtoT(event.offsetX);
+        plotter.prevF = plotter.canvasYtoF(event.offsetY);
     });
 
     plotter.canvas.addEventListener("mouseup", () => {

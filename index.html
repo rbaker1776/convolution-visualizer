@@ -5,11 +5,26 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Function Plotter</title>
     <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
 </head>
 <body>
     <header>
         <h1 style="color: #eeeeee;">Convolution Visualizer</h1>
     </header>
+    <hr class="functionHr">
+    <div class="paragraph">
+        <h2>Introduction</h2>
+        <p>This tool provides an interactive way to view and understand convolution integrals, a fundamental concept in mathematics and signal processing. With visual aids for functions \(f(t)\) and \(g(t)\), you can see how convolution shapes signals over time by sliding one function across another and observing the output. More information can be found below.</p>
+    </div>
+    <hr class="functionHr">
+    <div class="paragraph">
+            <h2>What is Convolution?</h2>
+            <p>Convolution is an operation that combines two functions to form a third function. It's widely used in signal processing and enginnering to analyze how systems will respond to an input. A convolution is typically denoted with a '\(*\)', i.e. \(f\) convole \(g\) is denoted \(f * g\). Frankly, this is blasphemous, as '\(*\)' is already used by multiplication. Hence convolution will here be denoted by '⭑'. A convolution is defined as:</p>
+            <div class="latexCentered">
+                \((f⭑g)(t) = \int_{-\infty}^{\infty}f(\tau)g(t-\tau)d\tau\).
+            </div>
+        </div>
+    <hr class="functionHr">
     <div id="canvasContainer">
         <canvas id="plotCanvas" height="400"></canvas>
         <div class="legend">

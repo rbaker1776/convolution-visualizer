@@ -177,6 +177,8 @@ class Plotter
 
 const e = Math.exp(1);
 
+const pi = Math.PI;
+
 function dd(t, deltaT)
 {
     return (
@@ -220,6 +222,7 @@ function dropdownSelect(selection)
         case "impulse":     return "dd(t)";
         case "expDecay":    return "exp(-t) * u(t)";
         case "triangle":    return "(1 - abs(t-1)) * u(t) * u(2-t)";
+        case "gaussian":    return "exp(-1/2 * 2*pi * t**2)"
         case "dampedSine":  return "sin(4*t) * exp(-t) * u(t)";
         case "dampedSq":    return "(-1)^floor(2*t) * exp(-floor(2*t)/2) * u(t)"
         case "biphasic":    return "exp(-t) * (u(t) * u(1-t) - u(t-1) * u(2-t))";

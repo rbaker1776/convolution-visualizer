@@ -11,20 +11,37 @@
     <header>
         <h1 style="color: #eeeeee;">Convolution Visualizer</h1>
     </header>
-    <hr class="functionHr">
     <div class="paragraph">
-        <h2>Introduction</h2>
-        <p>This tool provides an interactive way to view and understand convolution integrals, a fundamental concept in mathematics and signal processing. With visual aids for functions \(f(t)\) and \(g(t)\), you can see how convolution shapes signals over time by sliding one function across another and observing the output. More information can be found below.</p>
-    </div>
-    <hr class="functionHr">
-    <div class="paragraph">
-            <h2>What is Convolution?</h2>
-            <p>Convolution is an operation that combines two functions to form a third function. It's widely used in signal processing and enginnering to analyze how systems will respond to an input. A convolution is typically denoted with a '\(*\)', i.e. \(f\) convole \(g\) is denoted \(f * g\). Frankly, this is blasphemous, as '\(*\)' is already used by multiplication. Hence convolution will here be denoted by '⭑'. A convolution is defined as:</p>
-            <div class="latexCentered">
-                \((f⭑g)(t) = \int_{-\infty}^{\infty}f(\tau)g(t-\tau)d\tau\).
-            </div>
+        <div class="paragraphHeader">
+            <h2>Introduction</h2>
+            <button id="expandButton1">-</button>
         </div>
-    <hr class="functionHr">
+        <p>This tool lets you visualize and understand the convolution of functions—an essential operation in signal processing, image analysis, and engineering. Experiment with different functions and see how they interact, giving you insight into how convolution shapes signals and transforms data.</p>
+    </div>
+    <div class="paragraph" style="padding-top: 1rem; padding-bottom: 1rem">
+        <div class="paragraphHeader">
+            <h2>Understanding Convolution</h2>
+            <button id="expandButton2">+</button>
+        </div>
+        <h3 style="display: none;">What is Convolution</h3>
+        <p style="display: none;">Convolution is a mathematical operation that merges two functions (\(f\) and \(g\)) to produce a third function (\(f⭑g\)). The term <i>convolution</i> can refer to both the resulting function and the process of computing it. It is widely used in various fields, including signal processing, image analysis, and neural networks, for its ability to detect patterns and transform data. In essence, convolution allows you to blend two signals or functions, providing insight into how they interact over time.</p>
+        <h3 style="display: none;">Mathematical Definition</h3>
+        <p style="display: none;">The convolution of two functions \(f(t)\) and \(g(t)\) is defined as:</p>
+        <div class="latexCentered" style="display: none;">\((f⭑g)(t) = \int_{-\infty}^{\infty}f(\tau)g(t - \tau)d\tau\)</div>
+        <p style="display: none;">This integral computes the overlap of the two functions as one is shifted across the other. The result is a new function that captures how the shape of one function influences the other.</p>
+    </div>
+    <div class="paragraph" style="padding-top: 1rem; padding-bottom: 1rem">
+        <div class="paragraphHeader">
+            <h2>How to Use the Convolution Visualizer</h2>
+            <button id="expandButton3">+</button>
+        </div>
+        <p style="display: none;"><b>Input Functions: </b>You can input your own functions \(f(t)\) and \(g(t)\) or choose from a list of predefined functions. More information about valid functions and function syntax is at the bottom of the page.</p>
+        <p style="display: none;"><b>Visualize the Functions: </b>The first graph displays \(f(t)\), \(g(t)\), and \((f⭑g)(t)\). Use the checkboxes in the legend to toggle visibility for each function.</p>
+        <p style="display: none;"><b>Visualize the Convolution Integral: </b> The second graph provides a visual intuition for the convolution integral by showing \(g(t)\) sliding across \(f(t)\). Drag the dotted gray line left or right to view the convolution at different points in time. </p>
+        <p style="display: none;"><b>Zoom and Pan: </b>Click and drag to pan across the graph, and use the mouse wheel to zoom in on specific areas.</p>
+    </div>
+    <br>
+    <h1>Plot \(f(t)\) and \(g(t)\)</h1>
     <div id="canvasContainer">
         <canvas id="plotCanvas" height="400"></canvas>
         <div class="legend">
@@ -96,9 +113,133 @@
         </select>
     </div>
     <hr class="functionHr">
+    <br>
+    <div class="paragraph" style="padding-top: 1rem; padding-bottom: 1rem">
+        <div class="paragraphHeader">
+            <h2>Slide Plot</h2>
+            <button id="expandButton4">+</button>
+        </div>
+        <p style="display: none;">The second graph illustrates the convolution process by showing the two functions, \(f(t)\) and \(g(t)\), sliding over one another. As one function shifts across the other, you can observe their interaction and overlap.</p>
+        <p style="display: none;">The <i>area</i> shaded in green is equal to the <i>height</i> of the cyan dot.</p>
+        <p style="display: none;"><b>Note: </b>The height of the blue dot is calculated seperatley from the convolution itself. The blue dot is calculated as the area of the green shaded region. Thus, if the blue dot does not align with the convolution graph, it is likely that the chosen functions are not well behaved or you are zoomed too far in.</p>
+    </div>
+    <br>
+    <h1>Convolution Integral Visualized</h1>
     <canvas id="slideCanvas" width="400" height="400"></canvas>
-    <div>
-        <input type="range" id="tOffsetSlider" name="tOffset" min="-1" max="5" step="0.001">
+    <div class="paragraph" style="padding-top: 1rem; padding-bottom: 1rem">
+        <div class="paragraphHeader">
+            <h2>Tips for Choosing Functions</h2>
+            <button id="expandButton5">+</button>
+        </div>
+        <p style="display: none;">A convolution is an infinite integral (see <b>Understanding Convolution</b>). This tool is incapable of calculating infinite integrals. Thus, for meaningful results, it is important to ensure your input functions are "well behaved". Generally, functions that have a bounded integral, or are multiplied by a unit step, \(u(t)\), are well behaved.</p>
+        <p style="display: none;">It is typically obvious when a convolution is poorly behaved. The plot will jump and change as you pan across the graph, and the cyan dot will not align with the convolution plot. As an example, \(f(t) = t\) and \(g(t) = sin(t)\) is a poorly behaved convolution. Multiplying both funcions by a unit step, \(f(t) = tu(t)\) and \(g(t) = sin(t)u(t)\), fixes the problem.
+    </div>
+    <div class="paragraph" style="padding-top: 1rem; padding-bottom: 1rem">
+        <div class="paragraphHeader">
+            <h2>Defined Functions and Constants</h2>
+            <button id="expandButton6">+</button>
+        </div>
+        <div class="funcDef" style="display: none;">
+            <div class="funcSyntax">u(t)</div>
+            <div class="funcName">Heaviside / Unit Step</div>
+            <div class="funcTex">\(
+                u(t) = 
+                \begin{cases}
+                1 & \textrm{if } t \geq 0 \\
+                0 & \textrm{if } t < 0 \\
+                \end{cases}
+            \)</div>
+        </div>
+        <div class="funcDef" style="display: none;">
+            <div class="funcSyntax">dd()</div>
+            <div class="funcName">Dirac Delta / Impulse</div>
+            <div class="funcTex">\(
+                \delta(t) = 
+                \begin{cases}
+                \infty & \textrm{if } t = 0 \\
+                0 & \textrm{if } t ≠ 0 \\
+                \end{cases}
+            \)</div>
+        </div>
+        <div class="funcDef" style="display: none;">
+            <div class="funcSyntax">sin()</div>
+            <div class="funcName">Sine</div>
+            <div class="funcTex">\(sin(t)\)</div>
+        </div>
+        <div class="funcDef" style="display: none;">
+            <div class="funcSyntax">cos()</div>
+            <div class="funcName">Cosine</div>
+            <div class="funcTex">\(cos(t)\)</div>
+        </div>
+        <div class="funcDef" style="display: none;">
+            <div class="funcSyntax">tan()</div>
+            <div class="funcName">Tangent</div>
+            <div class="funcTex">\(tan(t)\)</div>
+        </div>
+        <div class="funcDef" style="display: none;">
+            <div class="funcSyntax">sqrt()</div>
+            <div class="funcName">Square Root</div>
+            <div class="funcTex">\(\sqrt{t}\)</div>
+        </div>
+        <div class="funcDef" style="display: none;">
+            <div class="funcSyntax">cbrt()</div>
+            <div class="funcName">Cube Root</div>
+            <div class="funcTex">\({t}^{\frac{1}{3}}\)</div>
+        </div>
+        <div class="funcDef" style="display: none;">
+            <div class="funcSyntax">abs()</div>
+            <div class="funcName">Absolute Value</div>
+            <div class="funcTex">\(|t|\)</div>
+        </div>
+        <div class="funcDef" style="display: none;">
+            <div class="funcSyntax">exp()</div>
+            <div class="funcName">Exponential</div>
+            <div class="funcTex">\(e^t\)</div>
+        </div>
+        <div class="funcDef" style="display: none;">
+            <div class="funcSyntax">log()</div>
+            <div class="funcName">Natural Logarithm</div>
+            <div class="funcTex">\(log_{e}(t)\)</div>
+        </div>
+        <div class="funcDef" style="display: none;">
+            <div class="funcSyntax">log10()</div>
+            <div class="funcName">Base 10 Logarithm</div>
+            <div class="funcTex">\(log_{10}(t)\)</div>
+        </div>
+        <div class="funcDef" style="display: none;">
+            <div class="funcSyntax">log2()</div>
+            <div class="funcName">Base 2 Logarithm</div>
+            <div class="funcTex">\(log_{2}(t)\)</div>
+        </div>
+        <div class="funcDef" style="display: none;">
+            <div class="funcSyntax">floor()</div>
+            <div class="funcName">Floor</div>
+            <div class="funcTex">\(\lfloor{t}\rfloor\)</div>
+        </div>
+        <div class="funcDef" style="display: none;">
+            <div class="funcSyntax">ceil()</div>
+            <div class="funcName">Ceiling</div>
+            <div class="funcTex">\(\lceil{t}\rceil\)</div>
+        </div>
+        <div class="funcDef" style="display: none;">
+            <div class="funcSyntax">e</div>
+            <div class="funcName">Euler's Number</div>
+            <div class="funcTex">\(e\)</div>
+        </div>
+        <div class="funcDef" style="display: none;">
+            <div class="funcSyntax">pi</div>
+            <div class="funcName">Pi</div>
+            <div class="funcTex">\(\pi\)</div>
+        </div>
+    </div>
+    <div class="paragraph" style="padding-top: 1rem; padding-bottom: 1rem">
+        <div class="paragraphHeader">
+            <h2>Function Syntax</h2>
+            <button id="expandButton7">+</button>
+        </div>
+        <p style="display: none;"><b>Multiplication: </b>Multiplication requires a '\(*\)'. To express \(f(t) = 2t\), write \(2 * t\).</p>
+        <p style="display: none;"><b>Exponentiation: </b>Exponentiation can be expressed with either a '^' or a double '\(*\)'. \(f(t) = t^{2}\) can be written as \(t\textrm{^}2\) or \(t**2\).</p>
+        <p style="display: none;"></p>
     </div>
     <script src="function.js"></script>
     <script src="core.js"></script>

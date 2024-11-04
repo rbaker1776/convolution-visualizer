@@ -1,5 +1,4 @@
 * {
-    font-family: "Helvetica", "Roboto", sans-serif; 
     margin: 0;
     padding: 0;
     background: black;
@@ -8,36 +7,73 @@
 
 header {
     display: flex;
-    padding: 1rem;
+    padding: 1.5rem;
     align-content: center;
     justify-content: space-around;
+    margin-bottom: -1rem;
 }
 
 header h1 {
-    margin-left: 1rem;
-    font-size: 36pt;
+    font-family: "Helvetica", "Roboto", sans-serif; 
+    font-size: 30pt;
 }
 
-.paragraph p {
-    text-align: justify;
-    margin-left: 6rem;
-    margin-right: 6rem;
-    margin-top: 0.5rem;
-    margin-bottom: 1.5rem;
+h1 {
+    
+    font-family: "Helvetica", "Roboto", sans-serif; 
+    font-size: 20pt;
+    text-align: center;
+    margin-bottom: 1rem;
+}
+
+.paragraph {
+    padding: 2rem;
+    margin-left: clamp(1rem, 10vw, 5rem);
+    margin-right: clamp(1rem, 10vw, 5rem);
+    box-shadow: 0 0 1rem rgba(255, 255, 255, 0.25);
+    margin-top: 2rem;
+    margin-bottom: 2rem;
+    border-radius: 1rem;
+}
+
+.paragraphHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-right: 1rem;
+}
+
+.paragraphHeader button {
+    border: none;
+    font-size: 24pt;
+    font-style: bold;
+    font-family: "Helvetica", "Roboto", sans-serif; 
+    cursor: pointer;
+    padding: 0.3rem;
 }
 
 .paragraph h2 {
+    font-family: "Helvetica", "Roboto", sans-serif; 
     text-align: left;
-    margin-left: 6rem;
-    margin-right: 6rem;
-    margin-top: 1.5rem;
-    margin-bottom: 0;
 }
 
-.latexCentered {
-    margin: 1rem;
-    margin-top: -.75rem;
+.paragraph h3 {
+    font-family: "Helvetica", "Roboto", sans-serif; 
+    text-align: left;
+    margin-top: 1.25rem;
+}
+
+.paragraph p {
+    margin-top: 0.5rem;
+    font-family: "Helvetica", "Roboto", sans-serif; 
+    text-align: left;
+    background-color: transparent;
+}
+
+.paragraph .latexCentered { 
+    text-align: center;
     font-size: 14pt;
+    margin-top: 0.75rem;
 }
 
 body {
@@ -170,10 +206,24 @@ canvas {
     background-color: cyan;
 }
 
-#tOffsetSlider {
-    margin: 1rem;
-    width: 60vw;
+.funcDef {
+    display: flex;
+    width: clamp(30rem, 50%, 100%);
+    justify-content: left;
+    align-items: center;
+    margin-bottom: 0.25rem;
+    position: relative;
+    left: 50%;
+    transform: translateX(-50%);
 }
 
-#tOffsetLabel {
+.funcSyntax {
+    font-family: "Cambria Math", "Georgia", "Times", serif;
+    width: 20%;
+}
+
+.funcName {
+    font-family: "Helvetica", "Roboto", sans-serif; 
+    width: 40%;
+    text-align: left;
 }

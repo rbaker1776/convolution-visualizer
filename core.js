@@ -434,7 +434,7 @@ slidePlotter.canvas.addEventListener("mousedown", (event) => {
         slidePlotter.isPanning = true;
 
     slidePlotter.prevT = clickT;
-    slidePlotter.prevF = functionPlotter.canvasYtoF(event.offsetY);
+    slidePlotter.prevF = slidePlotter.canvasYtoF(event.offsetY);
 });
 
 slidePlotter.canvas.addEventListener("mouseup", () => {
@@ -494,4 +494,41 @@ displayGtBox.addEventListener("change", () => {
 displayCvBox.addEventListener("change", () => {
     setTimeout(functionPlotter.redraw, 100);
     setTimeout(slidePlotter.redraw, 100);
+});
+
+
+const expandButtons = [
+    document.getElementById("expandButton1"),
+    document.getElementById("expandButton2"),
+    document.getElementById("expandButton3"),
+    document.getElementById("expandButton4"),
+    document.getElementById("expandButton5"),
+    document.getElementById("expandButton6"),
+    document.getElementById("expandButton7"),
+];
+
+expandButtons.forEach((button, idx) => {
+    button.addEventListener("mousedown", () => {
+        const newText = button.textContent == "+" ? "-" : "+";
+        const newDisplay = button.textContent == "+" ? (
+            idx == 5
+          ? "flex"
+          : "block"
+        ) : "none";
+        const newPadding = button.textContent == "+" ? "2rem": "1rem";
+        const grandparent = button.parentNode.parentNode;
+        const parent = button.parentNode;
+
+        for (let i = 0; i < grandparent.children.length; ++i)
+        {
+            const child = grandparent.children[i];
+            if (child === parent)
+                continue;
+            child.style.display = newDisplay;
+        }
+
+        grandparent.style.paddingTop = newPadding;
+        grandparent.style.paddingBottom = newPadding;
+        button.textContent = newText; 
+    });
 });

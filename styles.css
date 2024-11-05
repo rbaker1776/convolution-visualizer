@@ -27,10 +27,8 @@ h1 {
 }
 
 .paragraph {
-    padding: 2rem;
     margin-left: clamp(1rem, 10vw, 5rem);
     margin-right: clamp(1rem, 10vw, 5rem);
-    box-shadow: 0 0 1rem rgba(255, 255, 255, 0.25);
     margin-top: 2rem;
     margin-bottom: 2rem;
     border-radius: 1rem;
@@ -206,24 +204,9 @@ canvas {
     background-color: cyan;
 }
 
-.funcDef {
-    display: flex;
-    width: clamp(30rem, 50%, 100%);
-    justify-content: left;
-    align-items: center;
-    margin-bottom: 0.25rem;
-    position: relative;
-    left: 50%;
-    transform: translateX(-50%);
-}
-
-.funcSyntax {
-    font-family: "Cambria Math", "Georgia", "Times", serif;
-    width: 20%;
-}
-
-.funcName {
+footer {
     font-family: "Helvetica", "Roboto", sans-serif; 
-    width: 40%;
-    text-align: left;
+    color: #eeeeee;
+    font-size: 12pt;
+    padding: 1rem;
 }

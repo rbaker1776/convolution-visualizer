@@ -262,43 +262,6 @@ class Plotter
     }
 }
 
-const e = Math.exp(1);
-
-const pi = Math.PI;
-
-function dd(t, deltaT)
-{
-    return (
-        Math.abs(t) <= Math.abs(deltaT / 2)
-      ? 1 / Math.abs(deltaT)
-      : 0
-    );
-}
-
-function evaluate(func, tMin, tMax, deltaT)
-{
-    func = func.replace(/dd\(([^)]*)\)/g, (match, p1) => {
-        return `dd(${p1}, deltaT)`;
-    });
-    func = func.replace(/\bt\b/g, "(t * deltaT + tMin)");
-    return Array.from(
-        { length: Math.ceil((tMax - tMin) / deltaT) },
-        (_, t) => eval(func)
-    );
-}
-
-function convolve(ft, gt, deltaT)
-{
-    return Array.from(
-        { length: ft.length + gt.length - 1 },
-        (_, t) => {
-            let sum = 0;
-            for (let T = Math.max(0, t - (ft.length - 1)); T < Math.min(t, ft.length - 1); ++T)
-                sum += ft[t-T] * gt[T] * deltaT;
-            return sum;
-        }
-    ).slice(Math.floor(ft.length / 2), Math.floor(ft.length * 3/2));
-}
 
 function dropdownSelect(selection)
 {
@@ -318,30 +281,46 @@ function dropdownSelect(selection)
     }
 }
 
+
 function redrawFunctions()
 {
     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
     this.drawGrid();
     this.drawAxes();
 
-    const inputFt = parse(inputFtField.value);
-    const inputGt = parse(inputGtField.value);
+    const inputFt = parseExpression(inputFtField.value);
+    const inputGt = parseExpression(inputGtField.value);
+
+    if (inputFt == false)
+        inputFtField.style.color = "#FF4500";
+    else
+        inputFtField.style.color = "#eeeeee";
+
+
+    if (inputGt == false)
+        inputGtField.style.color = "#FF4500";
+    else
+        inputGtField.style.color = "#eeeeee";
 
     const tMax = this.tMin + this.scale * this.aspectRatio;
     const maxAbsT = Math.max(Math.abs(this.tMin), tMax);
     const deltaT = (tMax - this.tMin) / this.canvas.width;
 
-    const ft = evaluate(inputFt, -maxAbsT, maxAbsT, deltaT);
-    const gt = evaluate(inputGt, -maxAbsT, maxAbsT, deltaT);
-    const convolution = convolve(ft, gt, deltaT);
+    let ft, gt, convolution;
+    if (inputFt)
+        ft = evaluate(inputFt, -maxAbsT, maxAbsT, deltaT);
+    if (inputGt)
+        gt = evaluate(inputGt, -maxAbsT, maxAbsT, deltaT);
+    if (inputFt && inputGt)
+        convolution = convolve(ft, gt, deltaT);
     const beginIdx = Math.max(0, this.tToCanvasX(this.tMin + maxAbsT) - this.tToCanvasX(0));
 
-    if (displayGtBox.checked)
+    if (inputGt && displayGtBox.checked)
         this.plotFunction(gt.slice(
             Math.max(0, gt.length * (1 - (-this.tMin + tMax) / (maxAbsT + tMax))),
             Math.min(gt.length, gt.length * (tMax - this.tMin) / (maxAbsT - this.tMin))
         ), "orange");
-    if (displayFtBox.checked)
+    if (inputFt && displayFtBox.checked)
         this.plotFunction(ft.slice(
             Math.max(0, ft.length * (1 - (-this.tMin + tMax) / (maxAbsT + tMax))),
             Math.min(ft.length, ft.length * (tMax - this.tMin) / (maxAbsT - this.tMin))
@@ -356,33 +335,56 @@ function redrawSliders()
     this.drawGrid();
     this.drawAxes();
 
-    const inputFt = parse(inputFtField.value);
-    const inputGt = parse(inputGtField.value);
+    const inputFt = parseExpression(inputFtField.value);
+    const inputGt = parseExpression(inputGtField.value);
+
+    if (inputFt == false)
+        inputFtField.style.color = "#FF4500";
+    else
+        inputFtField.style.color = "#eeeeee";
+
+    if (inputGt == false)
+        inputGtField.style.color = "#FF4500";
+    else
+        inputGtField.style.color = "#eeeeee";
 
     const tMax = this.tMin + this.scale * this.aspectRatio;
     const maxAbsT = Math.max(Math.abs(this.tMin), tMax);
     const deltaT = (tMax - this.tMin) / this.canvas.width;
     const tOffset = this.cursorT;
 
-    const ftExtended = evaluate(inputFt, -maxAbsT, maxAbsT, deltaT);
-    const gtExtended = evaluate(inputGt, -maxAbsT, maxAbsT, deltaT);
-    const convolutionExt = convolve(ftExtended, gtExtended, deltaT);
+    let ftExtended, gtExtended, convolutionExt;
+    if (inputFt)
+        ftExtended = evaluate(inputFt, -maxAbsT, maxAbsT, deltaT);
+    if (inputGt)
+        gtExtended = evaluate(inputGt, -maxAbsT, maxAbsT, deltaT);
+    if (inputFt && inputGt)
+        convolutionExt = convolve(ftExtended, gtExtended, deltaT);
     const beginIdx = Math.max(0, this.tToCanvasX(this.tMin + maxAbsT) - this.tToCanvasX(0));
 
-    const ft = ftExtended.slice(
-        Math.max(0, ftExtended.length * (1 - (-this.tMin + tMax) / (maxAbsT + tMax))),
-        Math.min(ftExtended.length, ftExtended.length * (tMax - this.tMin) / (maxAbsT - this.tMin))
-    );
-    const gtBackwards = evaluate(inputGt, maxAbsT + tOffset, -maxAbsT + tOffset, -deltaT).slice(
-        Math.max(0, gtExtended.length * (1 - (-this.tMin + tMax) / (maxAbsT + tMax))),
-        Math.min(gtExtended.length, gtExtended.length * (tMax - this.tMin) / (maxAbsT - this.tMin))
-    );
-    const convolution = convolutionExt.slice(beginIdx, beginIdx + this.canvas.width);
+    let ft, gtBackwards, convolution;
+    if (inputFt)
+        ft = ftExtended.slice(
+            Math.max(0, ftExtended.length * (1 - (-this.tMin + tMax) / (maxAbsT + tMax))),
+            Math.min(ftExtended.length, ftExtended.length * (tMax - this.tMin) / (maxAbsT - this.tMin))
+        );
+    if (inputGt)
+        gtBackwards = evaluate(inputGt, maxAbsT + tOffset, -maxAbsT + tOffset, -deltaT).slice(
+            Math.max(0, gtExtended.length * (1 - (-this.tMin + tMax) / (maxAbsT + tMax))),
+            Math.min(gtExtended.length, gtExtended.length * (tMax - this.tMin) / (maxAbsT - this.tMin))
+        );
+    if (inputFt && inputGt)
+        convolution = convolutionExt.slice(beginIdx, beginIdx + this.canvas.width);
 
-    const area = this.highlightProductArea(ft, gtBackwards, "rgba(0, 255, 0, 0.3)");
-    this.plotFunction(gtBackwards, "orange");
-    this.plotFunction(ft, "red");
-    this.plotFunction(convolution, "cyan");
+    let area = -1e99;
+    if (inputFt && inputGt)
+        area = this.highlightProductArea(ft, gtBackwards, "rgba(0, 255, 0, 0.3)");
+    if (inputGt)
+        this.plotFunction(gtBackwards, "orange");
+    if (inputFt)
+        this.plotFunction(ft, "red");
+    if (inputFt && inputGt)
+        this.plotFunction(convolution, "cyan");
     this.drawCursor(area * deltaT);
 }
 
@@ -457,8 +459,8 @@ slidePlotter.canvas.addEventListener("mousemove", (event) => {
 
 inputFtField.addEventListener("keydown", (event) => {
     optionsFt.value = "default";
-    setTimeout(functionPlotter.redraw, 100);
-    setTimeout(slidePlotter.redraw, 100);
+    setTimeout(functionPlotter.redraw, 20);
+    setTimeout(slidePlotter.redraw, 20);
 });
 
 inputGtField.addEventListener("keydown", (event) => {

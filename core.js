@@ -262,7 +262,6 @@ class Plotter
     }
 }
 
-
 function dropdownSelect(selection)
 {
     switch (selection)
@@ -280,6 +279,20 @@ function dropdownSelect(selection)
         case "pulseTrain":  return "dd(t) - dd(t-1.2) + dd(t-2.4) - dd(t-3.6) + dd(t-4.8) - dd(t-6)";
     }
 }
+
+const inputFtField = document.getElementById("fInput");
+const inputGtField = document.getElementById("gInput");
+
+const optionsFt = document.getElementById("fOptions");
+const optionsGt = document.getElementById("gOptions");
+
+const displayFtBox = document.getElementById("toggleFt");
+const displayGtBox = document.getElementById("toggleGt");
+const displayCvBox = document.getElementById("toggleConvolution");
+
+const functionPlotter = new Plotter(document.getElementById("plotCanvas"), redrawFunctions);
+const slidePlotter = new Plotter(document.getElementById("slideCanvas"), redrawSliders);
+const plotters = [functionPlotter, slidePlotter];
 
 
 function redrawFunctions()
@@ -388,149 +401,101 @@ function redrawSliders()
     this.drawCursor(area * deltaT);
 }
 
-const inputFtField = document.getElementById("fInput");
-const inputGtField = document.getElementById("gInput");
-
-const optionsFt = document.getElementById("fOptions");
-const optionsGt = document.getElementById("gOptions");
-
-const displayFtBox = document.getElementById("toggleFt");
-const displayGtBox = document.getElementById("toggleGt");
-const displayCvBox = document.getElementById("toggleConvolution");
-
-const functionPlotter = new Plotter(document.getElementById("plotCanvas"), redrawFunctions);
-const slidePlotter = new Plotter(document.getElementById("slideCanvas"), redrawSliders);
-const plotters = [functionPlotter, slidePlotter];
-
-plotters.forEach((plotter, idx) => {
-    plotter.canvas.addEventListener("wheel", plotter.zoom);
-   
-    window.addEventListener("resize", plotter.resize);
-    
-    plotter.resize();
-});
+document.addEventListener("DOMContentLoaded", function()
+{
+    plotters.forEach((plotter, idx) => {
+        plotter.canvas.addEventListener("wheel", plotter.zoom);
+       
+        window.addEventListener("resize", plotter.resize);
+        
+        plotter.resize();
+    });
 
 
-functionPlotter.canvas.addEventListener("mousedown", (event) => {
-    functionPlotter.isPanning = true;
-    functionPlotter.prevT = functionPlotter.canvasXtoT(event.offsetX);
-    functionPlotter.prevF = functionPlotter.canvasYtoF(event.offsetY);
-});
+    functionPlotter.canvas.addEventListener("mousedown", (event) => {
+        functionPlotter.isPanning = true;
+        functionPlotter.prevT = functionPlotter.canvasXtoT(event.offsetX);
+        functionPlotter.prevF = functionPlotter.canvasYtoF(event.offsetY);
+    });
 
-functionPlotter.canvas.addEventListener("mouseup", () => {
-    functionPlotter.isPanning = false;
-});
+    functionPlotter.canvas.addEventListener("mouseup", () => {
+        functionPlotter.isPanning = false;
+    });
 
-functionPlotter.canvas.addEventListener("mouseleave", () => {
-    functionPlotter.isPanning = false;
-});
+    functionPlotter.canvas.addEventListener("mouseleave", () => {
+        functionPlotter.isPanning = false;
+    });
 
-functionPlotter.canvas.addEventListener("mousemove", functionPlotter.pan);
-
-
-slidePlotter.canvas.addEventListener("mousedown", (event) => {
-    const clickT = slidePlotter.canvasXtoT(event.offsetX);
-    if (Math.abs(clickT - slidePlotter.cursorT) < slidePlotter.scale * slidePlotter.aspectRatio * 0.01)
-        slidePlotter.isDragging = true;
-    else
-        slidePlotter.isPanning = true;
-
-    slidePlotter.prevT = clickT;
-    slidePlotter.prevF = slidePlotter.canvasYtoF(event.offsetY);
-});
-
-slidePlotter.canvas.addEventListener("mouseup", () => {
-    slidePlotter.isDragging = false;
-    slidePlotter.isPanning = false;
-});
-
-slidePlotter.canvas.addEventListener("mouseleave", () => {
-    slidePlotter.isDragging = false;
-    slidePlotter.isPanning = false;
-});
-
-slidePlotter.canvas.addEventListener("mousemove", (event) => {
-    if (slidePlotter.isPanning)
-        slidePlotter.pan(event);
-    else
-        slidePlotter.moveCursor(event);
-});
+    functionPlotter.canvas.addEventListener("mousemove", functionPlotter.pan);
 
 
-inputFtField.addEventListener("keydown", (event) => {
-    optionsFt.value = "default";
-    setTimeout(functionPlotter.redraw, 20);
-    setTimeout(slidePlotter.redraw, 20);
-});
+    slidePlotter.canvas.addEventListener("mousedown", (event) => {
+        const clickT = slidePlotter.canvasXtoT(event.offsetX);
+        if (Math.abs(clickT - slidePlotter.cursorT) < slidePlotter.scale * slidePlotter.aspectRatio * 0.01)
+            slidePlotter.isDragging = true;
+        else
+            slidePlotter.isPanning = true;
 
-inputGtField.addEventListener("keydown", (event) => {
-    optionsGt.value = "default";
-    setTimeout(functionPlotter.redraw, 100);
-    setTimeout(slidePlotter.redraw, 100);
-});
+        slidePlotter.prevT = clickT;
+        slidePlotter.prevF = slidePlotter.canvasYtoF(event.offsetY);
+    });
 
-optionsFt.addEventListener("change", () => {
-    const selection = optionsFt.value;
-    inputFtField.value = dropdownSelect(selection);
-    functionPlotter.redraw();
-    slidePlotter.redraw();
-});
+    slidePlotter.canvas.addEventListener("mouseup", () => {
+        slidePlotter.isDragging = false;
+        slidePlotter.isPanning = false;
+    });
 
-optionsGt.addEventListener("change", () => {
-    const selection = optionsGt.value;
-    inputGtField.value = dropdownSelect(selection);
-    functionPlotter.redraw();
-    slidePlotter.redraw();
-});
+    slidePlotter.canvas.addEventListener("mouseleave", () => {
+        slidePlotter.isDragging = false;
+        slidePlotter.isPanning = false;
+    });
 
-displayFtBox.addEventListener("change", () => {
-    setTimeout(functionPlotter.redraw, 100);
-    setTimeout(slidePlotter.redraw, 100);
-});
-
-displayGtBox.addEventListener("change", () => {
-    setTimeout(functionPlotter.redraw, 100);
-    setTimeout(slidePlotter.redraw, 100);
-});
-
-displayCvBox.addEventListener("change", () => {
-    setTimeout(functionPlotter.redraw, 100);
-    setTimeout(slidePlotter.redraw, 100);
-});
+    slidePlotter.canvas.addEventListener("mousemove", (event) => {
+        if (slidePlotter.isPanning)
+            slidePlotter.pan(event);
+        else
+            slidePlotter.moveCursor(event);
+    });
 
 
-const expandButtons = [
-    document.getElementById("expandButton1"),
-    document.getElementById("expandButton2"),
-    document.getElementById("expandButton3"),
-    document.getElementById("expandButton4"),
-    document.getElementById("expandButton5"),
-    document.getElementById("expandButton6"),
-    document.getElementById("expandButton7"),
-];
+    inputFtField.addEventListener("keydown", (event) => {
+        optionsFt.value = "default";
+        setTimeout(functionPlotter.redraw, 20);
+        setTimeout(slidePlotter.redraw, 20);
+    });
 
-expandButtons.forEach((button, idx) => {
-    button.addEventListener("mousedown", () => {
-        const newText = button.textContent == "+" ? "-" : "+";
-        const newDisplay = button.textContent == "+" ? (
-            idx == 5
-          ? "flex"
-          : "block"
-        ) : "none";
-        const newPadding = button.textContent == "+" ? "2rem": "1rem";
-        const grandparent = button.parentNode.parentNode;
-        const parent = button.parentNode;
+    inputGtField.addEventListener("keydown", (event) => {
+        optionsGt.value = "default";
+        setTimeout(functionPlotter.redraw, 100);
+        setTimeout(slidePlotter.redraw, 100);
+    });
 
-        for (let i = 0; i < grandparent.children.length; ++i)
-        {
-            const child = grandparent.children[i];
-            if (child === parent)
-                continue;
-            child.style.display = newDisplay;
-        }
+    optionsFt.addEventListener("change", () => {
+        const selection = optionsFt.value;
+        inputFtField.value = dropdownSelect(selection);
+        functionPlotter.redraw();
+        slidePlotter.redraw();
+    });
 
-        grandparent.style.paddingTop = newPadding;
-        grandparent.style.paddingBottom = newPadding;
-        button.textContent = newText; 
+    optionsGt.addEventListener("change", () => {
+        const selection = optionsGt.value;
+        inputGtField.value = dropdownSelect(selection);
+        functionPlotter.redraw();
+        slidePlotter.redraw();
+    });
+
+    displayFtBox.addEventListener("change", () => {
+        setTimeout(functionPlotter.redraw, 100);
+        setTimeout(slidePlotter.redraw, 100);
+    });
+
+    displayGtBox.addEventListener("change", () => {
+        setTimeout(functionPlotter.redraw, 100);
+        setTimeout(slidePlotter.redraw, 100);
+    });
+
+    displayCvBox.addEventListener("change", () => {
+        setTimeout(functionPlotter.redraw, 100);
+        setTimeout(slidePlotter.redraw, 100);
     });
 });

@@ -1,3 +1,7 @@
-Add pan ability
-Add t0, t1 sliders
-Add visualization of sliding g(t)
+add dark mode
+clean code
+add better parsing ability
+update content
+* func defs
+* better explanation
+* properties of convolution

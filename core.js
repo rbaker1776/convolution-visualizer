@@ -1,4 +1,5 @@
 
+
 class Plotter
 {
     constructor(canvas, redrawFunc)
@@ -58,7 +59,7 @@ class Plotter
         this.ctx.moveTo(0, drawY);
         this.ctx.lineTo(this.canvas.width, drawY);
 
-        this.ctx.strokeStyle = "white";
+        this.ctx.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue("--axis-color").trim();
         this.ctx.lineWidth = 2;
         this.ctx.stroke();
     }
@@ -70,7 +71,7 @@ class Plotter
         const interval = Math.pow(10, Math.floor(Math.log10(this.scale / 2)));
 
         this.ctx.font = `16pt Cambria Math`;
-        this.ctx.fillStyle = "grey";
+        this.ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue("--grid-color").trim();
         this.ctx.textAlign = "right";
 
         const tiMin = Math.floor(this.tMin / interval) * interval;
@@ -119,7 +120,7 @@ class Plotter
                 this.ctx.fillText(`${f}`, x0 - 5, drawY - 5)
         }
 
-        this.ctx.strokeStyle = "grey";
+        this.ctx.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue("--grid-color").trim();
         this.ctx.lineWidth = 1;
         this.ctx.stroke();
     }
@@ -173,9 +174,9 @@ class Plotter
 
         const t = this.tToCanvasX(this.cursorT)
         this.ctx.moveTo(t, 0);
-        this.ctx.lineTo(t, this.canvas.height);
+        this.ctx.lineTo(t, this.canvas.height + 3);
 
-        this.ctx.strokeStyle = "grey";
+        this.ctx.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue("--grid-color").trim();
         this.ctx.lineWidth = 3;
         this.ctx.setLineDash([5,5]);
 
@@ -186,7 +187,7 @@ class Plotter
 
         this.ctx.arc(t, this.fToCanvasY(convolutionValue), 6, 0, 2 * Math.PI);
 
-        this.ctx.fillStyle = "cyan";
+        this.ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue("--conv-color").trim();
         this.ctx.fill();
     }
 
@@ -294,7 +295,6 @@ const functionPlotter = new Plotter(document.getElementById("plotCanvas"), redra
 const slidePlotter = new Plotter(document.getElementById("slideCanvas"), redrawSliders);
 const plotters = [functionPlotter, slidePlotter];
 
-
 function redrawFunctions()
 {
     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
@@ -307,13 +307,13 @@ function redrawFunctions()
     if (inputFt == false)
         inputFtField.style.color = "#FF4500";
     else
-        inputFtField.style.color = "#eeeeee";
+        inputFtField.style.color = "var(--text-color)";
 
 
     if (inputGt == false)
         inputGtField.style.color = "#FF4500";
     else
-        inputGtField.style.color = "#eeeeee";
+        inputGtField.style.color = "var(--text-color)";
 
     const tMax = this.tMin + this.scale * this.aspectRatio;
     const maxAbsT = Math.max(Math.abs(this.tMin), tMax);
@@ -332,14 +332,14 @@ function redrawFunctions()
         this.plotFunction(gt.slice(
             Math.max(0, gt.length * (1 - (-this.tMin + tMax) / (maxAbsT + tMax))),
             Math.min(gt.length, gt.length * (tMax - this.tMin) / (maxAbsT - this.tMin))
-        ), "orange");
+        ), getComputedStyle(document.documentElement).getPropertyValue("--gt-color").trim());
     if (inputFt && displayFtBox.checked)
         this.plotFunction(ft.slice(
             Math.max(0, ft.length * (1 - (-this.tMin + tMax) / (maxAbsT + tMax))),
             Math.min(ft.length, ft.length * (tMax - this.tMin) / (maxAbsT - this.tMin))
-        ), "red");
+        ), getComputedStyle(document.documentElement).getPropertyValue("--ft-color").trim());
     if (displayCvBox.checked)
-        this.plotFunction(convolution.slice(beginIdx, beginIdx + this.canvas.width), "cyan");
+        this.plotFunction(convolution.slice(beginIdx, beginIdx + this.canvas.width), getComputedStyle(document.documentElement).getPropertyValue("--conv-color").trim());
 }
 
 function redrawSliders()
@@ -352,14 +352,14 @@ function redrawSliders()
     const inputGt = parseExpression(inputGtField.value);
 
     if (inputFt == false)
-        inputFtField.style.color = "#FF4500";
+        inputFtField.style.color = "var(--err-color)";
     else
-        inputFtField.style.color = "#eeeeee";
+        inputFtField.style.color = "var(--text-color)";
 
     if (inputGt == false)
-        inputGtField.style.color = "#FF4500";
+        inputGtField.style.color = "var(--err-color)";
     else
-        inputGtField.style.color = "#eeeeee";
+        inputGtField.style.color = "var(--text-color)";
 
     const tMax = this.tMin + this.scale * this.aspectRatio;
     const maxAbsT = Math.max(Math.abs(this.tMin), tMax);
@@ -391,13 +391,13 @@ function redrawSliders()
 
     let area = -1e99;
     if (inputFt && inputGt)
-        area = this.highlightProductArea(ft, gtBackwards, "rgba(0, 255, 0, 0.3)");
+        area = this.highlightProductArea(ft, gtBackwards, getComputedStyle(document.documentElement).getPropertyValue("--area-color").trim());
     if (inputGt)
-        this.plotFunction(gtBackwards, "orange");
+        this.plotFunction(gtBackwards, getComputedStyle(document.documentElement).getPropertyValue("--gt-color").trim());
     if (inputFt)
-        this.plotFunction(ft, "red");
+        this.plotFunction(ft, getComputedStyle(document.documentElement).getPropertyValue("--ft-color").trim());
     if (inputFt && inputGt)
-        this.plotFunction(convolution, "cyan");
+        this.plotFunction(convolution, getComputedStyle(document.documentElement).getPropertyValue("--conv-color").trim());
     this.drawCursor(area * deltaT);
 }
 
@@ -498,4 +498,28 @@ document.addEventListener("DOMContentLoaded", function()
         setTimeout(functionPlotter.redraw, 100);
         setTimeout(slidePlotter.redraw, 100);
     });
+
+    const initTheme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+    applyTheme(initTheme);
+
+    document.getElementById("themeIcon").addEventListener("click", () => {
+        const currentTheme = document.documentElement.getAttribute("data-theme");
+        const newTheme =
+              currentTheme == "dark"
+            ? "light"
+            : "dark";
+        applyTheme(newTheme);
+    });
 });
+
+function applyTheme(theme)
+{
+    document.documentElement.setAttribute('data-theme', theme);
+    document.getElementById("themeButton").firstChild.src =
+          theme == "light"
+        ? "./static/images/sun-icon.png"
+        : "./static/images/moon-icon.png";
+    functionPlotter.redraw();
+    slidePlotter.redraw();
+}
+

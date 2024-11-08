@@ -10,6 +10,7 @@
     --conv-color: #2E76F8;
     --area-color: rgba(0, 127, 14, 0.6);
     --err-color: #B22222;
+    --path-color: #f5b402;
 }
 
 [data-theme="dark"] {
@@ -23,6 +24,7 @@
     --conv-color: #4BD9FF;
     --area-color: rgba(0, 255, 0, 0.3);
     --err-color: #E22222;
+    --path-color: #E9F23F;
 }
 
 * {
@@ -250,11 +252,13 @@ table {
     position: relative;
     left: 50%;
     transform: translateX(-50%);
+    margin-top: 1.6rem;
 }
 
 td, th {
     padding: 0.3rem 2rem;
     text-align: left;
+    color: var(--text-color);
 }
 
 th {

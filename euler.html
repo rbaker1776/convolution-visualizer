@@ -9,7 +9,20 @@
 </head>
 <body>
     <header>
-        <h1 style="color: #eeeeee;">Euler's Identity Visualizer</h1>
+        <h1 style="color: var(--text-color)">Euler's Identity Visualizer</h1>
+        <div class="headerButtons">
+            <button id="themeButton"><img id="themeIcon" src="./static/images/moon-icon.png" alt="Dark Mode"/></button> 
+        </div>
     </header>
-    <canvas id="mainCanvas">
-</body
+    <hr class="functionHr">
+    <canvas id="mainCanvas"></canvas>
+    <hr class="functionHr">
+    <div class="functionInput">
+        <p class="functionLabel">z =<p>
+        <input type="text" class="functionText" id="fInput" placeholder="1 + i" value="">
+    </div>
+    <script src="colorscheme.js"></script>
+    <script src="complex.js"></script>
+    <script src="plotter.js"></script>
+    <script src="euler.js"></script>
+</body>

@@ -1,6 +1,6 @@
-
-:root {
-    /* Light mode colors */
+:root
+{
+    /* light mode colors */
     --bg-color: #FFFFFF;
     --text-color: #080808;
     --axis-color: #222222;
@@ -11,10 +11,18 @@
     --area-color: rgba(0, 127, 14, 0.6);
     --err-color: #B22222;
     --path-color: #f5b402;
+
+    /* fonts */
+    --sans-serif: "Helvetica", "Roboto", sans-serif;
+    --serif: "Cambria Math", "Georgia", "Times", serif;
+
+    /* page margins */
+    --margin-lr: clamp(1rem, 10vw, 5rem);
 }
 
-[data-theme="dark"] {
-    /* Dark mode colors */
+[data-theme="dark"]
+{
+    /* dark mode colors */
     --bg-color: #000B1C;
     --text-color: #FFFFFF;
     --axis-color: #DDDDDD;
@@ -27,156 +35,102 @@
     --path-color: #E9F23F;
 }
 
-* {
+* /* default settings */
+{
     margin: 0;
     padding: 0;
     background: var(--bg-color);
 }
 
-header {
+header
+{
     display: flex;
     padding-top: 2.4rem;
     align-items: center;
     justify-content: space-between;
+    margin-left: var(--margin-lr);
+    margin-right: var(--margin-lr);
 }
 
-header h1 {
-    font-family: "Helvetica", "Roboto", sans-serif; 
+header h1
+{
+    font-family: var(--sans-serif);
     font-size: 30pt;
-    margin-left: clamp(1rem, 10vw, 5rem);
 }
 
-.headerButtons {
-    margin-right: clamp(1rem, 10vw, 5rem);
+.header-buttons
+{
     cursor: pointer;
 }
 
-.headerButtons button {
+.header-buttons button
+{
     border: none;
 }
 
-.headerButtons button img {
+.header-buttons button img
+{
     width: 24pt;
 }
 
-.paragraph {
-    margin-left: clamp(1rem, 10vw, 5rem);
-    margin-right: clamp(1rem, 10vw, 5rem);
+.paragraph
+{
+    margin-left: var(--margin-lr);
+    margin-right: var(--margin-lr);
     margin-top: 2rem;
     margin-bottom: 2rem;
     border-radius: 1rem;
     color: var(--text-color);
 }
 
-.paragraphHeader {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding-right: 1rem;
-}
-
-.paragraphHeader button {
-    border: none;
-    font-size: 24pt;
-    font-style: bold;
-    font-family: "Helvetica", "Roboto", sans-serif; 
-    cursor: pointer;
-    padding: 0.3rem;
-}
-
-.paragraph h2 {
-    font-family: "Helvetica", "Roboto", sans-serif; 
+.paragraph h2
+{
+    font-family: var(--sans-serif);
     text-align: left;
     margin-top: 2.4rem;
 }
 
 .paragraph h3 {
-    font-family: "Helvetica", "Roboto", sans-serif; 
+    font-family: var(--sans-serif);
     text-align: left;
     margin-top: 1.5rem;
 }
 
 .paragraph p {
     margin-top: 0.5rem;
-    font-family: "Helvetica", "Roboto", sans-serif; 
+    font-family: var(--sans-serif); 
     text-align: left;
     background-color: transparent;
-    line-height: 1.8;
+    line-height: 1.5;
 }
 
 .paragraph li {
     margin-left: 2rem;
     text-align: left;
-    font-family: "Helvetica", "Roboto", sans-serif; 
+    font-family: var(--sans-serif);
+    line-height: 1.5;
+}
+
+.paragraph .equation
+{
+    text-align: center;
+    font-size: 14pt;
     line-height: 1.8;
 }
 
-.paragraph .latexCentered { 
-    text-align: center;
-    font-size: 14pt;
-    margin-top: 0.75rem;
-}
-
-body {
-    text-align: center;
-    margin: 0;
-}
-
-canvas {
-    width: 100%;
-    margin-bottom: -3pt;
-}
-
-.functionHr {
-    margin-top: 0;
-    border: none;
-    border-top: 2pt solid var(--grid-color);
-}
-
-.functionInput {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-left: 3rem;
-    margin-right: 3rem;
-    padding: 0.6rem 0;
-}
-
-.functionText {
-    width: calc(100vw - 24rem);
-    font-family: "Cambria Math", "Georgia", "Times", serif;
-    font-size: 24pt;
-    border: none;
-    margin-right: 0;
-    color: var(--text-color);
-}
-
-.functionLabel {
-    color: var(--grid-color);
-    font-family: "Cambria Math", "Georgia", "Times", serif;
-    font-size: 24pt;
-    font-style: italic;
-    margin-right: 0.75rem;
-    border: none;
-}
-
-.functionOptions {
-    color: var(--text-color);
-    margin: 0;
-    padding: 0;
-    border: none;
-    width: 10rem;
-    font-family: "Helvetica", "Roboto", sans-serif; 
-    font-size: 12pt;
-    margin-left: 1rem;
-}
-
-#canvasContainer {
+#plot-canvas-container
+{
     position: relative;
     display: inline-block;
 }
 
-.legend {
+canvas
+{
+    width: 100%;
+}
+
+.legend
+{
     position: absolute;
     bottom: 1rem;
     left: 1.6rem;
@@ -188,26 +142,22 @@ canvas {
     text-align: left; 
 }
 
-.legendItem {
+.legend-item
+{
     display: flex;
     margin: 0.2rem;
     align-items: center;
 }
 
-.legendItem, 
-.legendItem * {
+.legend-item,
+.legend-item *
+{
     background: transparent;
-    font-family: "Cambria Math", "Georgia", "Times", serif;
+    font-family: var(--serif);
 }
 
-.color-box {
-    height: 2pt;
-    width: 12pt;
-    margin-right: 0.4rem;
-    margin-left: 0.4rem;
-}
-
-.custom-checkbox {
+.legend-checkbox
+{
     position: relative;
     cursor: pointer;
     padding-left: 30px;
@@ -216,13 +166,15 @@ canvas {
     pointer-events: auto;
 }
 
-.custom-checkbox input {
+.legend-checkbox input
+{
     position: absolute;
     cursor: pointer;
     opacity: 0;
 }
 
-.checkmark {
+.checkmark
+{
     position: absolute;
     top: 0;
     left: 0;
@@ -231,57 +183,62 @@ canvas {
     border-radius: 3pt;
 }
 
-.custom-checkbox .checkmark {
+.legend-checkbox .checkmark {
     background-color: transparent;
     border: 1pt solid;
 }
 
-.red-checkbox input:checked ~ .checkmark {
+#ft-legend-checkbox input:checked ~ .checkmark
+{
     background-color: var(--ft-color);
 }
 
-.orange-checkbox input:checked ~ .checkmark {
+#gt-legend-checkbox input:checked ~ .checkmark
+{
     background-color: var(--gt-color);
 }
 
-.cyan-checkbox input:checked ~ .checkmark {
+#conv-legend-checkbox input:checked ~ .checkmark
+{
     background-color: var(--conv-color);
 }
 
-table {
-    position: relative;
-    left: 50%;
-    transform: translateX(-50%);
-    margin-top: 1.6rem;
+.function-input
+{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: 3rem;
+    margin-right: 3rem;
+    padding: 0.6rem 0;
 }
 
-td, th {
-    padding: 0.3rem 2rem;
-    text-align: left;
+.function-label
+{
+    color: var(--grid-color);
+    font-family: var(--serif);
+    font-size: 24pt;
+    font-style: italic;
+    margin-right: 0.75rem;
+    border: none;
+}
+
+.function-text
+{
+    width: calc(100vw - 24rem);
+    font-family: var(--serif);
+    font-size: 24pt;
+    border: none;
+    margin-right: 0;
     color: var(--text-color);
 }
 
-th {
-    font-size: 14pt;
-    font-family: "Helvetica", "Roboto", sans-serif; 
-    text-align: center;
-}
-
-.funcSyntax {
+.function-options
+{
+    color: var(--text-color);
+    border: none;
+    width: 10rem;
+    font-family: var(--sans-serif);
     font-size: 12pt;
-    font-family: "Cambria Math", "Georgia", "Times", serif;
-    color: var(--text-color);
-}
-
-.funcName {
-    font-size: 12pt;
-    font-family: "Helvetica", "Roboto", sans-serif; 
-    color: var(--text-color);
-}
-
-footer {
-    font-family: "Helvetica", "Roboto", sans-serif; 
-    color: var(--text-color);
-    font-size: 12pt;
-    padding: 1rem;
+    margin-left: 1rem;
 }

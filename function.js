@@ -1,17 +1,10 @@
 
 
-// DEFINED CONSTANTS
-
 const e = Math.exp(1);
-
 const pi = Math.PI;
 
-const validPattern = /^(\d+(\.\d+)?|\bt\b|\b(sin|cos|exp|abs|floor|dd|u)\b|[\+\-\*\/\(\)\?\:])+$/;
-
-// DEFINED FUNCTIONS
-
 const u = (t) => { return (t >= 0 ? 1 : 0); };
-const dd = (t, deltaT) => { return (Math.abs(t) <= Math.abs(deltaT / 2) ? (1 / Math.abs(deltaT)) : 0); };
+const dd = (t, delta_t) => { return ((Math.abs(t) < delta_t / 2) ? (1 / Math.abs(delta_t)) : 0); };
 
 const sin = Math.sin;
 const cos = Math.cos;
@@ -31,66 +24,203 @@ const min = Math.min;
 const max = Math.max;
 
 
-function dropdownSelect(selection)
+function evaluate_fn(fn, t_min, delta_t, fn_length)
 {
-    switch (selection)
+    return Array.from(
+        { length: fn_length },
+        (_, t) => eval(fn)
+    ).map(value => ((Number.isNaN(value) || !Number.isFinite(value))) ? 0 : value);
+}
+
+function parse_fn(fn)
+{
+    let parsed_fn = fn
+        .replace(/\s+/g, '') // remove whitespace
+        .replace(/\b\^\b/g, '**') // replace '^' with '**' for exponentiation
+        .replace(/dd\(([^()]*|\([^)]*\))*\)/g, (match, p1) => { return `dd((${p1}), (delta_t))`; })
+        .replace(/\bt\b/g, "(((t) * (delta_t)) + (t_min))");
+
+    return parsed_fn;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*
+
+
+function extract_parens(expression, left_idx)
+{
+    console.assert(expression[left_idx] == '(');
+    let i = left_idx + 1;
+    let paren_balance = 1;
+    while (paren_balance != 0)
     {
-        case "unitStep":    return "u(t)";
-        case "pulse":       return "u(t) * u(1-t)";
-        case "impulse":     return "dd(t)";
-        case "expDecay":    return "exp(-t) * u(t)";
-        case "triangle":    return "(1 - abs(t-1)) * u(t) * u(2-t)";
-        case "gaussian":    return "exp(-1/2 * 2*pi * t**2)"
-        case "dampedSine":  return "sin(4*t) * exp(-t) * u(t)";
-        case "dampedSq":    return "(-1)^floor(2*t) * exp(-floor(2*t)/2) * u(t)"
-        case "biphasic":    return "exp(-t) * (u(t) * u(1-t) - u(t-1) * u(2-t))";
-        case "triphasic":   return "exp(-t/2) * (u(t) * u(1-t) - u(t-1) * u(2-t) + u(t-2) * u(3-t))";
-        case "pulseTrain":  return "dd(t) - dd(t-1.2) + dd(t-2.4) - dd(t-3.6) + dd(t-4.8) - dd(t-6)";
-        case "echo":        return "dd(t) + 0.5*dd(t-0.8) + 0.25*dd(t-1.6) + 0.125*dd(t-2.4) + 0.0625*dd(t-3.2)";
+        paren_balance += (expression[i] == '(');
+        paren_balance -= (expression[i] == ')');
+        ++i;
     }
+    return expression.slice(left_idx, i);
 }
 
-function evaluate(func, tMin, tMax, deltaT)
+function parse_fn(fn, delta_t)
 {
-    return Array.from(
-        { length: Math.ceil((tMax - tMin) / deltaT) },
-        (_, t) => eval(func)
-    ).map(value => (Number.isNaN(value) || !Number.isFinite(value)) ? 0 : value);
-}
-
-function convolve(ft, gt, deltaT)
-{
-    return Array.from(
-        { length: ft.length + gt.length - 1 },
-        (_, t) => {
-            let sum = 0;
-            for (let T = Math.max(0, t - (ft.length - 1)); T < Math.min(t, ft.length - 1); ++T)
-                sum += ft[t-T] * gt[T] * deltaT;
-            return sum;
-        }
-    ).slice(Math.floor(ft.length / 2), Math.floor(ft.length * 3/2));
-}
-
-function parseExpression(expression, deltaT)
-{
-    expression = expression
-        .replace(/\s+/g, "")
-        .replace(/\b\^\b/g, "**")
-        .replace(/dd\(([^)]*)\)/g, (match, p1) => {
-            return `dd(${p1}, deltaT)`;
-        })
-        .replace(/\bt\b/g, "(t * deltaT + tMin)");
-
-    const t = 0;
-    const tMin = 0;
+    fn = fn
+        .replace(/\s+/g, '') // remove whitespace
+        .replace(/\b\^\b/g, '**'); // replace '^' with '**' for exponentiation
     
-    try
+    let replacements = [];
+    let ri = 1;
+
+    for (let i = 0; i < fn.length; ++i)
     {
-        const result = eval(expression);
-        return expression;
+        if (fn[i] == 'd' && i < fn.length - 1 && fn[++i] == 'd') // we've found a dirac call
+        {
+            const dirac_arg = extract_parens(fn, ++i);
+            replacements.push(`((${dirac_arg}), (delta_t))`);
+            i += dirac_arg.length;
+        }
     }
-    catch (error)
-    {
-        return false;
-    }
+
+
 }
+*/

@@ -1,7 +1,0 @@
-add dark mode
-clean code
-add better parsing ability
-update content
-* func defs
-* better explanation
-* properties of convolution

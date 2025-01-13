@@ -2,108 +2,164 @@
 //import Point from "./point.js";
 //import Plotter from "./plotter.js";
 
+const input_ft_field = document.getElementById("f-input");
+const input_gt_field = document.getElementById("g-input");
 
-input_ft_field = document.getElementById("f-input");
-input_gt_field = document.getElementById("g-input");
+const options_ft = document.getElementById("f-options");
+const options_gt = document.getElementById("g-options");
 
-
-// calculates the convolution of two functions
-function convolve(ft, gt, delta_t)
+function parse_fn(fn)
 {
-    // ∀(T)(                    for some x, for all T
-    //     (f(T) = 0)           if f(T) = 0,
-    //  OR (g(x - T) = 0)       or if g(x - T) = 0,
-    //  OR (g(T) = 0)           or if g(T) = 0,
-    //  OR (f(x - T) = 0)       or if f(x - T) = 0,
-    // ) ==> (f * g)(x) = 0     then (f * g)(x) = 0
-    return Array.from(
-        { length: ft.length + gt.length - 1 },
-        (_, t) => {
-            let sum = 0;
-            for (let T = Math.max(0, t - (ft.length - 1)); T < Math.min(t, ft.length - 1); ++T)
-                sum += ft[t-T] * gt[T] * delta_t * window.devicePixelRatio;
-            return sum;
-        }
-    ).slice(Math.floor(ft.length / 2), Math.floor(ft.length * 3/2));
+    let parsed_fn = fn
+        .replace(/\s+/g, '') // remove whitespace
+        .replace(/\b\^\b/g, '**') // replace '^' with '**' for exponentiation
+
+    return parsed_fn;
 }
 
+// calculates the convolution of two functions
+function convolve(f, g, t_min, t_max, delta_t)
+{
+    return (t) => {
+        let sum = 0;
+        for (let T = t_min - (t_max - t_min); T <= t_max + (t_max - t_min); T += delta_t)
+            sum += f(T) * g(t - T) * delta_t;
+        return sum;
+    }
+}
 
-// function plotter redraw function
 function redraw_functions()
 {
     this.clear_canvas();
-    this.draw_grid(interval=Math.pow(10, Math.floor(Math.log10(this.y_range() / 2))));
-    this.draw_axes(width=1, color="white");
+    this.draw_grid();
+    this.draw_axes();
 
-    const input_ft = parse_fn(input_ft_field.value);
-    const input_gt = parse_fn(input_gt_field.value);
-    const max_abs_t = Math.max(Math.abs(this.min_x()), Math.abs(this.max_x()))
+    const f = new Function('t', `return ${parse_fn(input_ft_field.value)};`);
+    const g = new Function('t', `return ${parse_fn(input_gt_field.value)};`);
 
-    let ft_ext, gt_ext, cv, ft, gt
-    const begin_idx = Math.max(0, this.canvas_x(this.min_x() + max_abs_t) - this.canvas_x(0));
-    const end_idx = begin_idx + this.canvas.width
+    this.plot_function(g, "orange");
+    this.plot_function(f, "red");
+    this.plot_function(convolve(f, g, this.view.x_min, this.view.x_max, this.delta_t()), "cyan");
+}
 
-    ft = evaluate_fn(input_ft, this.min_x(), window.devicePixelRatio / this.ppx, this.canvas.width);
-    gt = evaluate_fn(input_gt, this.min_x(), window.devicePixelRatio / this.ppx, this.canvas.width);
-    cv = convolve(ft, gt, 1 / this.ppx);
+function redraw_sliders()
+{
+    this.clear_canvas();
+    this.draw_grid();
+    this.draw_axes();
 
-    this.plot_function(gt, color="orange");
-    this.plot_function(ft, color="red");
-    // this.plot_function(cv, color="cyan");
+    const f = new Function('t', `return ${parse_fn(input_ft_field.value)};`);
+    const g = new Function('t', `return ${parse_fn(input_gt_field.value)};`);
+    const g_reverse = (t) => { return g(-(t - this.slider_x)); };
+    const integral = (t) => { return f(t) * g_reverse(t); };
+
+    this.plot_integral(integral, "green");
+    this.plot_function(g_reverse, "orange");
+    this.plot_function(f, "red");
+    this.plot_function(convolve(f, g, this.view.x_min, this.view.x_max, this.delta_t()), "cyan");
+
+    this.ctx.setLineDash([5, 5]);
+    this.ctx.strokeStyle = "gray";
+    this.ctx.lineWidth = 3 / this.scale;
+    this.draw_line(
+        new Point(this.map_x_to_pixel(this.slider_x), 0),
+        new Point(this.map_x_to_pixel(this.slider_x), this.canvas.height),
+        true 
+    );
+    this.ctx.setLineDash([]);
 }
 
 
-document.addEventListener("DOMContentLoaded", () =>
-{
-    // initialize function plotter (first canvas)
-    const function_plotter = new Plotter(document.getElementById("plot-canvas"));
-    function_plotter.redraw = redraw_functions;
-    function_plotter.resolve(width=window.innerWidth, height=400);
-
-    let function_plotter_is_panning = false;
-    let function_plotter_prev_x = 0;
-    let function_plotter_prev_y = 0;
-
-    function_plotter.canvas.addEventListener("wheel", (event) => {
-        event.preventDefault();
-        function_plotter.zoom.bind(function_plotter);
-        function_plotter.zoom(new Point(event.offsetX, event.offsetY), z=event.deltaY / 200);
-    });
-
-    function_plotter.canvas.addEventListener("mousedown", () => {
-
-        function_plotter_is_panning = true;
-        function_plotter_prev_x = event.offsetX;
-        function_plotter_prev_y = event.offsetY;
+document.addEventListener("DOMContentLoaded", () => {
+    const function_plotter = new Plotter("plot-canvas", redraw_functions, { height: 400 });
+   
+    function_plotter.canvas.addEventListener("mousedown", (e) => {
+        function_plotter.is_panning = true;
+        function_plotter.pan_origin = new Point(
+            function_plotter.map_pixel_to_x(e.offsetX / function_plotter.scale),
+            function_plotter.map_pixel_to_y(e.offsetY / function_plotter.scale)
+        );
     });
 
     function_plotter.canvas.addEventListener("mouseup", () => {
-        function_plotter_is_panning = false;
+        function_plotter.is_panning = false;
     });
 
     function_plotter.canvas.addEventListener("mouseleave", () => {
-        function_plotter_is_panning = false;
+        function_plotter.is_panning = false;
     });
 
-    function_plotter.canvas.addEventListener("mousemove", () => {
-        if (function_plotter_is_panning)
+    function_plotter.canvas.addEventListener("mousemove", (e) => {
+        if (function_plotter.is_panning)
         {
-            function_plotter.pan.bind(function_plotter);
-            function_plotter.pan(dx=(function_plotter_prev_x - event.offsetX), dy=(event.offsetY - function_plotter_prev_y));
-            function_plotter_prev_x = event.offsetX;
-            function_plotter_prev_y = event.offsetY;
+            function_plotter.pan(
+                function_plotter.pan_origin.x - function_plotter.map_pixel_to_x(e.offsetX / function_plotter.scale),
+                function_plotter.pan_origin.y - function_plotter.map_pixel_to_y(e.offsetY / function_plotter.scale),
+            );
+            function_plotter.pan_origin = new Point(
+                function_plotter.map_pixel_to_x(e.offsetX / function_plotter.scale),
+                function_plotter.map_pixel_to_y(e.offsetY / function_plotter.scale)
+            );
         }
     });
 
-    window.addEventListener("resize", () => {
-        function_plotter.resolve.bind(function_plotter);
-        function_plotter.resolve(width=window.innerWidth);
+
+    const slide_plotter = new Plotter("slide-canvas", redraw_sliders, { height: 400 });
+    slide_plotter.slider_x = 1;
+    slide_plotter.is_sliding = false;
+    slide_plotter.slide_origin = 0;
+
+    slide_plotter.canvas.addEventListener("mousedown", (e) => {
+        const point = new Point(
+            slide_plotter.map_pixel_to_x(e.offsetX / slide_plotter.scale),
+            slide_plotter.map_pixel_to_y(e.offsetY / slide_plotter.scale)
+        );
+
+        if (Math.abs((point.x - slide_plotter.slider_x) / (slide_plotter.view.x_max - slide_plotter.view.x_min)) < 0.02)
+        {
+            slide_plotter.is_sliding = true;
+            slide_plotter.slide_origin = point.x;
+        }
+        else
+        {
+            slide_plotter.is_panning = true;
+            slide_plotter.pan_origin = point;
+        }
     });
 
-    input_ft_field.addEventListener("keydown", (event) => {
-        function_plotter.redraw.bind(function_plotter);
-        setTimeout(function_plotter.redraw, 100);
+    slide_plotter.canvas.addEventListener("mouseup", () => {
+        slide_plotter.is_panning = false;
+        slide_plotter.is_sliding = false;
     });
+
+    slide_plotter.canvas.addEventListener("mouseleave", () => {
+        slide_plotter.is_panning = false;
+        slide_plotter.is_sliding = false;
+    });
+
+    slide_plotter.canvas.addEventListener("mousemove", (e) => {
+        if (slide_plotter.is_panning)
+        {
+            slide_plotter.pan(
+                slide_plotter.pan_origin.x - slide_plotter.map_pixel_to_x(e.offsetX / slide_plotter.scale),
+                slide_plotter.pan_origin.y - slide_plotter.map_pixel_to_y(e.offsetY / slide_plotter.scale),
+            );
+            slide_plotter.pan_origin = new Point(
+                slide_plotter.map_pixel_to_x(e.offsetX / slide_plotter.scale),
+                slide_plotter.map_pixel_to_y(e.offsetY / slide_plotter.scale)
+            );
+        }
+        else if (slide_plotter.is_sliding)
+        {
+            const dx = slide_plotter.slide_origin - slide_plotter.map_pixel_to_x(e.offsetX / slide_plotter.scale);
+            slide_plotter.slider_x -= dx;
+            slide_plotter.slide_origin = slide_plotter.map_pixel_to_x(e.offsetX / slide_plotter.scale);
+            slide_plotter.redraw();
+        }
+    });
+
+    function_plotter.redraw();
+    slide_plotter.redraw();
 
     document.documentElement.setAttribute('data-theme', "dark");
 });

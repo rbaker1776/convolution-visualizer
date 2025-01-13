@@ -3,109 +3,130 @@
 "use strict";
 
 
+class Point
+{
+    constructor(x, y)
+    {
+        this.x = x;
+        this.y = y;
+    }
+}
+
+
 class Plotter
 {
-    constructor(canvas)
+    constructor(canvas_id, redraw = () => {}, options = {})
     {
-        console.assert(canvas instanceof HTMLCanvasElement);
-
-        this.canvas = canvas;
+        this.canvas = document.getElementById(canvas_id);
         this.ctx = this.canvas.getContext("2d");
 
-        this.ppx = 128; // pixels per unit x
-        this.ppy = 128; // pixels per unit y
+        this.redraw = redraw;
+            
+        this.scale = window.devicePixelRatio || 1;
+        this.canvas.width = options.width || window.innerWidth;
+        this.canvas.height = options.height || window.innerHeight;
+        this.ctx.scale(this.scale, this.scale);
 
-        this.x_min = -(canvas.width  / this.ppx) * 0.5;
-        this.y_min = -(canvas.height / this.ppy) * 0.5;
+        this.options = {
+            axis_color: options.axis_color || "white",
+            grid_color: options.grid_colot || "gray",
+            function_color: options.function_color || "red",
+            integral_color: options.integral_color || "green",
+        }
 
-        this.debug();
+        this.view = {
+            x_min: options.x_min || -5,
+            y_min: options.y_min || -5 * this.canvas.height / this.canvas.width,
+            x_max: options.x_max || 5,
+            y_max: options.y_max || 5 * this.canvas.height / this.canvas.width,
+        }
+
+        this.is_panning = false;
+        this.pan_origin = new Point(0, 0);
+
+        this.init_event_listeners();
     }
 
-    // functions for x_min and y_max to keep a consistent interface
-    min_x() { return this.x_min; }
-    max_x() { return this.x_min + this.canvas.width / this.ppx; }
-    min_y() { return this.y_min; }
-    max_y() { return this.y_min + this.canvas.height / this.ppx; }
-
-    // given an x value (x ∈ ℝ) representing a value from the domain,
-    // returns an X value(X ∈ ℕ, 0 <= X < canvas.width) representing a canvas coordinate
-    canvas_x(x)
+    map_x_to_pixel(x)
     {
-        return (x - this.x_min) * (this.ppx / window.devicePixelRatio);
+        const { x_min, x_max } = this.view;
+        const width = this.canvas.width / this.scale;
+        return ((x - x_min) / (x_max - x_min)) * width;
     }
 
-    // given a y value (y ∈ ℝ) representing a value from the range,
-    // returns a Y value (Y ∈ ℕ, 0 <= Y < canvas.height) representing a canvas coordinate
-    canvas_y(y)
+    map_y_to_pixel(y)
     {
-        return (this.canvas.height / window.devicePixelRatio - 1) - ((y - this.y_min) * (this.ppy / window.devicePixelRatio));
+        const { y_min, y_max } = this.view;
+        const height = this.canvas.height / this.scale;
+        return height - ((y - y_min) / (y_max - y_min)) * height;
     }
 
-    // given an X value (X ∈ ℕ, 0 <= X < canvas.width) representing a canvas coordinate,
-    // returns an x value(x ∈ ℝ) representing a value from the domain
-    function_x(X)
+    map_pixel_to_x(pixel)
     {
-        return this.x_min + (X / (this.ppx / window.devicePixelRatio));
+        const { x_min, x_max } = this.view;
+        const width = this.canvas.width / this.scale;
+        return x_min + (x_max - x_min) * (pixel / width);
     }
 
-    // given an Y value (Y ∈ ℕ, 0 <= Y < canvas.height) representing a canvas coordinate,
-    // returns a y value(y ∈ ℝ) representing a value from the range
-    function_y(Y)
+    map_pixel_to_y(pixel)
     {
-        return this.y_min + (((this.canvas.height / window.devicePixelRatio - 1) - Y) / (this.ppy / window.devicePixelRatio));
+        const { y_min, y_max } = this.view;
+        const height = this.canvas.height / this.scale;
+        return y_max - (y_max - y_min) * (pixel / height);
     }
 
-    x_range()
+    delta_t()
     {
-        return this.max_x() - this.min_x();
+        return this.map_pixel_to_x(1) - this.map_pixel_to_x(0);
     }
 
-    y_range()
+    // method to rescale the canvas and ctx when window size changes
+    resolve(width, height)
     {
-        return this.max_y() - this.min_y();
-    }
+        const { canvas, ctx, view } = this;
+        const { x_min, x_max, y_min, y_max } = view;
 
-    resolve(width=this.canvas.width, height=this.canvas.height)
-    {
-        const px = Math.abs(this.min_x() / this.x_range());
-        const py = Math.abs(this.min_y() / this.y_range());
+        view.x_max +=  0.5 * (width - canvas.width) * (x_max - x_min) / canvas.width;
+        view.x_min -=  0.5 * (width - canvas.width) * (x_max - x_min) / canvas.width;
+        view.y_max +=  0.5 * (height - canvas.height) * (y_max - y_min) / canvas.height;
+        view.y_min -=  0.5 * (height - canvas.height) * (y_max - y_min) / canvas.height;
 
-        this.canvas.width = width;
-        this.canvas.height = height;
-        this.x_min = -px * this.x_range();
-        this.y_min = -px * this.y_range();
+        canvas.width = width;
+        canvas.height = height;
 
-        this.ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+        ctx.scale(this.scale, this.scale);
         this.redraw();
     }
 
-    zoom(center, z=-0.05)
+    zoom(center, zoom_factor)
     {
-        z = Math.min(Math.max(z, -0.2), 0.2)
+        const { canvas, ctx, view } = this;
+        const { x_min, x_max, y_min, y_max } = view;
 
         // if the center is 'close enough' to the origin,
         // assume the user meant to zoom into the origin
-        if (Math.abs(this.function_x(center.x / window.devicePixelRatio)) / this.x_range() < 0.05)
-            center.x = this.canvas_x(0) * window.devicePixelRatio
-        if (Math.abs(this.function_y(center.y / window.devicePixelRatio)) / this.y_range() < 0.05)
-            center.y = this.canvas_y(0) * window.devicePixelRatio
+        if (Math.abs(center.x / (x_max - x_min)) < 0.05) { center.x = 0; }
+        if (Math.abs(center.y / (y_max - y_min)) < 0.05) { center.y = 0; }
 
-        const new_ppx = this.ppx * (1 - z);
-        const new_ppy = new_ppx; // maybe implement 2-axis scrolling in the future
+        zoom_factor = Math.min(Math.max(zoom_factor, -0.2), 0.2);
 
-        this.x_min = this.function_x(center.x / window.devicePixelRatio) - (center.x / new_ppx);
-        this.y_min = this.function_y(center.y / window.devicePixelRatio) - ((this.canvas.height - window.devicePixelRatio - center.y) / new_ppy);
-
-        this.ppx = new_ppx;
-        this.ppy = new_ppy;
+        view.x_max = Math.min(center.x + (x_max - center.x) * (1 + zoom_factor), 1e10);
+        view.x_min = Math.max(center.x + (x_min - center.x) * (1 + zoom_factor), -1e10);
+        view.y_max = Math.min(center.y + (y_max - center.y) * (1 + zoom_factor), 1e10 * canvas.height / canvas.width);
+        view.y_min = Math.max(center.y + (y_min - center.y) * (1 + zoom_factor), -1e10 * canvas.height / canvas.width);
 
         this.redraw();
     }
 
-    pan(dx=0, dy=0)
+    pan(dx, dy)
     {
-        this.x_min += dx / this.ppx;
-        this.y_min += dy / this.ppy;
+        const { view } = this;
+
+        view.x_max += dx;
+        view.x_min += dx;
+        view.y_max += dy;
+        view.y_min += dy;
+
         this.redraw();
     }
 
@@ -114,113 +135,135 @@ class Plotter
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
     }
 
-    draw_grid(interval=1, color="gray", width=0.5, font="Cambria Math", fontsize=8)
+    draw_line(from, to, stroke = false, options = {})
     {
-        this.ctx.beginPath();
-        this.ctx.font = `${fontsize}pt ${font}`;
-        this.ctx.fillStyle = color;
-        this.ctx.textAlign = "center";
-        this.ctx.strokeStyle = color;
-        this.ctx.lineWidth = width;
-
-        const skip_n_x = Math.max(Math.floor(200 / (this.ppx * interval)), 1);
-        const skip_n_y = Math.max(Math.floor(100 / (this.ppy * interval)), 1);
-
-        for (
-            let x = Math.floor(this.min_x() / interval) * interval;
-            x <= Math.ceil(this.max_x() / interval) * interval;
-            x += interval
-        )
-        {
-            if (Math.abs(x) < interval / 2) // no need to redraw axis at (x = 0)
-                continue;
-            const draw_x = this.canvas_x(x);
-            this.ctx.moveTo(draw_x, 0);                      // why not use this.plot_line()?
-            this.ctx.lineTo(draw_x, this.canvas.height - 1); // too many calls to ctx.stroke()
-            if (Math.round(Math.abs(x) / interval) % skip_n_x == 0)
-                this.ctx.fillText(`${x.toExponential(1)}`, draw_x, this.canvas_y(0) - 5);
-        }
-
-        this.ctx.textAlign = "right";
-
-        for (
-            let y = Math.floor(this.min_y() / interval) * interval;
-            y <= Math.ceil(this.max_y() / interval) * interval;
-            y += interval
-        )
-        {
-            if (Math.abs(y) < interval / 2) // no need to redraw axis at (y = 0)
-                continue;
-            const draw_y = this.canvas_y(y);
-            this.ctx.moveTo(0, draw_y);
-            this.ctx.lineTo(this.canvas.width - 1, draw_y);
-            if (Math.round(Math.abs(y) / interval) % skip_n_y == 0)
-                this.ctx.fillText(`${y.toExponential(1)}`, this.canvas_x(0) - 5, draw_y - 5);
-        }
-
-        if (this.min_x() < 0 && this.max_x() > 0 && this.min_y() < 0 && this.max_y() > 0)
-            this.ctx.fillText('0', this.canvas_x(0) - 5, this.canvas_y(0) - 5);
-        this.ctx.stroke();
+        if (stroke) this.ctx.beginPath();
+        this.ctx.moveTo(from.x, from.y);
+        this.ctx.lineTo(to.x, to.y);
+        if (stroke) this.ctx.stroke();
     }
 
-    draw_axes(color="white", width=1)
+    draw_axes()
     {
-        this.ctx.beginPath();
-        this.ctx.strokeStyle = color;
-        this.ctx.lineWidth = width;
+        const { canvas, ctx, options, view, scale } = this;
+        const { x_min, x_max, y_min, y_max } = view;
 
-        if (this.min_x() < 0 && this.max_x() > 0)
+        ctx.strokeStyle = options.axis_color;
+        ctx.lineWidth = 1 / scale;
+
+        if (y_min <= 0 && y_max >= 0)
         {
-            this.ctx.moveTo(this.canvas_x(0), 0);
-            this.ctx.lineTo(this.canvas_x(0), this.canvas.height - 1);
+            const x_axis_pixel = this.map_y_to_pixel(0);
+            this.draw_line(new Point(0, x_axis_pixel), new Point(canvas.width / scale, x_axis_pixel), true);
         }
 
-        if (this.min_y() < 0 && this.max_y() > 0)
+        if (x_min <= 0 && x_max >= 0)
         {
-            this.ctx.moveTo(0, this.canvas_y(0));
-            this.ctx.lineTo(this.canvas.width - 1, this.canvas_y(0));
+            const y_axis_pixel = this.map_x_to_pixel(0);
+            this.draw_line(new Point(y_axis_pixel, 0), new Point(y_axis_pixel, canvas.height / scale), true);
         }
-
-        this.ctx.stroke();
     }
 
-    plot_function(f, color="red", width=2)
+    draw_grid()
     {
-        console.assert(f.length == this.canvas.width);
+        const { canvas, ctx, options, view, scale } = this;
+        const { x_min, x_max, y_min, y_max } = view;
 
-        this.ctx.beginPath();
-        this.ctx.moveTo(0, this.canvas_y(f[0]));
+        const width = canvas.width / this.scale;
+        const height = canvas.height / this.scale;
 
-        //let y_prev = f[0];
-        const range_y = this.canvas.height + 2 * width; // total range of y values that can be drawn to
+        ctx.strokeStyle = options.grid_color;
+        ctx.lineWidth = 0.5 / scale;
+        ctx.beginPath();
 
-        for (let draw_x = 0; draw_x < f.length; ++draw_x)
+        const grid_spacing = Math.pow(10, Math.floor(Math.log10((y_max - y_min) / 2)));
+
+        for (let x = Math.ceil(x_min / grid_spacing) * grid_spacing; x <= x_max; x += grid_spacing)
         {
-            const draw_y = Math.min(Math.max(     // cap the function at just above or below the
-                this.canvas_y(f[draw_x]),         // canvas bounds to avoid extra computation and
-            -width), this.canvas.height + width); // drawing
-            //if (Math.abs(draw_y - y_prev) == range_y) // if we have a nearly vertical line
-            //    this.ctx.moveTo(draw_x, draw_y);      // don't draw it. This is to handle 
-            //else                                      // functions like tan(x), with jumps from +∞
-            this.ctx.lineTo(draw_x, draw_y);      //  to -∞ to elide extraneous vertical lines
-            //y_prev = draw_y;
+            const x_pixel = this.map_x_to_pixel(x);
+            this.draw_line(new Point(x_pixel, 0), new Point(x_pixel, canvas.height / scale));
         }
 
-        this.ctx.strokeStyle = color;
-        this.ctx.lineWidth = width;
-        this.ctx.stroke();
+        for (let y = Math.ceil(y_min / grid_spacing) * grid_spacing; y <= y_max; y += grid_spacing)
+        {
+            const y_pixel = this.map_y_to_pixel(y);
+            this.draw_line(new Point(0, y_pixel), new Point(canvas.width / scale, y_pixel));
+        }
+
+        ctx.stroke();
     }
 
-    debug()
+    plot_function(fn, color)
     {
-        console.assert(this.canvas_x(this.min_x()) == 0);
-        console.assert(this.canvas_x(this.max_x()) == this.canvas.width / window.devicePixelRatio);
-        console.assert(this.canvas_y(this.max_y()) == -1);
-        console.assert(this.canvas_y(this.min_y()) == this.canvas.height / window.devicePixelRatio - 1);
+        const { canvas, ctx, options, view, scale } = this;
+        const { x_min, x_max, y_min, y_max } = view;
+        const width = this.canvas.width / this.scale;
 
-        console.assert(this.canvas_x(this.function_x(0)) == 0);
-        console.assert(this.canvas_y(this.function_y(0)) == 0);
-        console.assert(this.function_x(this.canvas_x(0)) == 0);
-        console.assert(this.function_y(this.canvas_y(0)) == 0);
+        ctx.strokeStyle = color || options.function_color;
+        ctx.lineWidth = 3 / scale;
+        ctx.beginPath();
+        ctx.moveTo(0, this.map_y_to_pixel(fn(x_min)));
+
+        const dx = (x_max - x_min) / width;
+
+        for (let x = x_min; x <= x_max; x += dx)
+        {
+            const y = fn(x, this.delta_t());
+            const x_pixel = this.map_x_to_pixel(x);
+            const y_pixel = this.map_y_to_pixel(y);
+            ctx.lineTo(x_pixel, y_pixel);
+        }
+
+        ctx.stroke();
+    }
+
+    plot_integral(fn, color)
+    {
+        const { canvas, ctx, options, view, scale } = this;
+        const { x_min, x_max, y_min, y_max } = view;
+        const width = this.canvas.width / this.scale;
+
+        ctx.strokeStyle = color || options.integral_color;
+        ctx.lineWidth = 1 / this.scale;
+        ctx.beginPath();
+        ctx.moveTo(0, this.map_y_to_pixel(fn(x_min)));
+
+        const x_axis_pixel = this.map_y_to_pixel(0);
+        const dx = (x_max - x_min) / width;
+
+        for (let x = x_min; x <= x_max; x += dx)
+        {
+            const y = fn(x, this.delta_t());
+            const x_pixel = this.map_x_to_pixel(x);
+            const y_pixel = this.map_y_to_pixel(y);
+            this.draw_line(new Point(x_pixel, x_axis_pixel), new Point(x_pixel, y_pixel));
+        }
+
+        ctx.stroke();
+    }
+
+    redraw() {}
+
+    init_event_listeners()
+    {
+        window.addEventListener("resize", () => {
+            this.resolve(window.innerWidth, 400);
+        });
+
+        this.canvas.addEventListener("wheel", (e) => {
+            e.preventDefault();
+            this.zoom(new Point(
+                this.map_pixel_to_x(e.offsetX / this.scale),
+                this.map_pixel_to_y(e.offsetY / this.scale)
+            ), e.deltaY / 256);
+        });
+
+        this.map_x_to_pixel.bind(this);
+        this.map_y_to_pixel.bind(this);
+        this.map_pixel_to_x.bind(this);
+        this.map_pixel_to_y.bind(this);
+
+        this.zoom.bind(this);
+        this.pan.bind(this);
     }
 }

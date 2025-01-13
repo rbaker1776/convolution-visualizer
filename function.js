@@ -3,8 +3,15 @@
 const e = Math.exp(1);
 const pi = Math.PI;
 
-const u = (t) => { return (t >= 0 ? 1 : 0); };
-const dd = (t, delta_t) => { return ((Math.abs(t) < delta_t / 2) ? (1 / Math.abs(delta_t)) : 0); };
+const u = (t, delta_t) => {
+    delta_t = delta_t || Number.EPSILON;
+    return (t > -delta_t / 2 ? 1 : 0);
+};
+
+const dd = (t, delta_t) => {
+    delta_t = delta_t || Number.EPSILON;
+    return ((Math.abs(t) < delta_t / 2) ? (1 / Math.abs(delta_t)) : 0);
+};
 
 const sin = Math.sin;
 const cos = Math.cos;
@@ -32,16 +39,6 @@ function evaluate_fn(fn, t_min, delta_t, fn_length)
     ).map(value => ((Number.isNaN(value) || !Number.isFinite(value))) ? 0 : value);
 }
 
-function parse_fn(fn)
-{
-    let parsed_fn = fn
-        .replace(/\s+/g, '') // remove whitespace
-        .replace(/\b\^\b/g, '**') // replace '^' with '**' for exponentiation
-        .replace(/dd\(([^()]*|\([^)]*\))*\)/g, (match, p1) => { return `dd((${p1}), (delta_t))`; })
-        .replace(/\bt\b/g, "(((t) * (delta_t)) + (t_min))");
-
-    return parsed_fn;
-}
 
 
 

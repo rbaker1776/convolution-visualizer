@@ -7,103 +7,54 @@
     <link rel="stylesheet" href="styles.css">
     <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script> <!-- latex formatting -->
 </head>
+
 <body>
-    <header>
-        <h1 style="color: var(--text-color)">Convolution Visualizer</h1>
-        <div class="header-buttons">
-            <button id="theme-button"><img id="theme-icon" src="./static/images/moon-icon.png" alt="Dark Mode" /></button> 
-        </div>
-    </header>
-    <div class="paragraph">
-        <h2>Introduction</h2>
-<p>This tool lets you visualize and understand the convolution of functions—an essential operation in signal processing, image analysis, and engineering. Experiment with different functions and see how they interact, giving you insight into how convolution shapes signals and transforms data.</p>
-    </div>
-    <div class="paragraph">
-        <h2>What is Convolution?</h2>
-        <p>Convolution is a mathematical operation that combines two functions \(f\) and \(g\) to produce a third function \((f*g)\). The term <i>convolution</i> can refer to both the resulting function and the process of computing it. It is widely used in various fields, including signal processing, image analysis, and neural networks, for its ability to detect patterns and transform data. In essence, convolution allows you to blend two signals or functions, providing insight into how they interact over time.</p>
-        <h3>Definition</h3>
-        <p>The convolution of two functions \(f(t)\) and \(g(t)\) is defined as:</p>
-        <div class="equation">\((f*g)(t) = \int_{-\infty}^{\infty}f(\tau)g(t - \tau)d\tau\)</div>
-        <p>Where:</p>
-        <ul>
-            <li>\(t\) is the time or spatial variable, and the point at which we are evaluating the convolution.</li>
-            <li>\(\tau\) is a dummy variable of integration.</li>
-        </ul>
-        <p>The operation involves multiplying the function \(f(t)\) with a shifted and reversed version of \(g(t)\), and then integrating over all values of \(\tau\). In discrete signal processing, this becomes a summation over discrete values:</p>
-        <div class="equation">\((f*g)[t] = \sum_{\tau = -\infty}^{\infty}{f[\tau]g[t-\tau]}\)</div>
-        <h3>Use Cases</h3>
-        <p>In image processing, convolution is used to apply filters (such as edge detection or blurring) to an image. In deep learning, particularly in Convolutional Neural Networks (CNNs), convolution is used to automatically learn filters and extract important features from images during the training process. In system analysis, convolution is used to determine the output of a linear time-invariant (LTI) system by convolving the system's impulse response with the input signal.
-    </div>
-    <div class="paragraph">
-        <h2>How to Use This Tool</h3>
-        <ol>
-            <li style="margin-top: 0.45rem;">
-                <p>
-                <b>Select Functions: </b>
-                Enter two functions \(f(t)\) and \(g(t)\) or choose from a list of predefined functions. Tips and information for choosing functions can be found below.
-                </p>
-            </li>
-            <li>
-                <p>
-                <b>View Functions: </b>
-                The first canvas displays the graphs of \(f(t)\), \(g(t)\), and \((f*g)(t)\). Use the checkboxes in the legend to toggle visibility for each function. Feel free to pan around or zoom to get a better view.
-                </p>
-            </li>
-            <li>
-                <p>
-                <b>Visualize Convolution: </b>
-                The second canvas illustrates the convolution process by showing \(g(t)\) sliding backwards over \(f(t)\). As it slides across, the value of the convolution integral is illustrated by the green shaded area; the integral over the product of the sliding functions. You can view the convolution at different points in time by dragging the dotted line left or right.
-                </p>
-            </li>
-        </ol>
-    </div> <!-- class="paragraph" -->
-    <div id="plot-canvas-container">
-        <canvas id="plot-canvas"></canvas>
-        <div class="legend">
-            <div class="legend-item">
-                <div class="checkbox-container">
-                    <label class="legend-checkbox" id="ft-legend-checkbox">
-                        <input type="checkbox" id="ft-checkbox" checked>
-                        <span class="checkmark", style="border-color: var(--ft-color);"></span>
-                    </label>
-                </div>            
-                <span>f(t)</span>
-            </div>
-            <div class="legend-item">
-                <div class="checkbox-container" id="gt-legend-checkbox">
-                    <label class="legend-checkbox">
-                        <input type="checkbox" id="gt-checkbox" checked>
-                        <span class="checkmark", style="border-color: var(--gt-color);"></span>
-                    </label>
-                </div>            
-                <span>g(t)</span>
-            </div>
-            <div class="legend-item">
-                <div class="checkbox-container" id="conv-legend-checkbox">
-                    <label class="legend-checkbox">
-                        <input type="checkbox" id="conv-checkbox" checked>
-                        <span class="checkmark", style="border-color: var(--conv-color);"></span>
-                    </label>
-                </div>            
-                <span>(f ✽ g)(t)</span>
-            </div>
-        </div> <!-- class="legend" -->
-    </div> <!-- id="plot-canvas-container" -->
+    <canvas id="plot-canvas"></canvas>
+
     <div class="function-input" style="margin-top: 0.4rem;">
         <p class="function-label">f(t) =</p>
-        <input type="text" class="function-text" id="f-input" placeholder="exp(-t) * u(t)" value="exp(-t) * u(t)">
+        <input type="text" class="function-text" id="f-input" placeholder="exp(-t) * u(t)" value="exp(-t / 2) * u(t)">
         <select class="function-options" id="f-options" name="f-options">
+            <option value="default" disabled selected>-- Select One --</option>
+            <option value="unit-step">Unit Step</option>
+            <option value="pulse">Pulse</option>
+            <option value="impulse">Impulse</option>
+            <option value="exp-decay">Exponential Decay</option>
+            <option value="ramp">Ramp</option>
+            <option value="gaussian">Gaussian</option>
+            <option value="damped-sin">Damped Sine</option>
+            <option value="damped-sq">Damped Square</option>
+            <option value="damped-tri">Damped Triangle</option>
+            <option value="biphasic">Biphasic</option>
+            <option value="triphasic">Triphasic</option>
+            <option value="pulse-train">Impulse Train</option>
         </select> <!-- class="function-options" -->
-    </div> <!-- class="legend" -->
+    </div>
+
     <hr style="margin: 0.45rem 0; height: 0; border: none;">
+
     <div class="function-input" style="margin-bottom: 0.4rem;">
         <p class="function-label">g(t) =</p>
-        <input type="text" class="function-text" id="g-input" placeholder="u(t)" value="u(t)">
+        <input type="text" class="function-text" id="g-input" placeholder="sin(t) / t * u(t)" value="2 * sin(t) / t * u(t)">
         <select class="function-options" id="g-options" name="g-options">
+            <option value="default" disabled selected>-- Select One --</option>
+            <option value="unit-step">Unit Step</option>
+            <option value="pulse">Pulse</option>
+            <option value="impulse">Impulse</option>
+            <option value="exp-decay">Exponential Decay</option>
+            <option value="ramp">Ramp</option>
+            <option value="gaussian">Gaussian</option>
+            <option value="damped-sin">Damped Sine</option>
+            <option value="damped-sq">Damped Square</option>
+            <option value="damped-tri">Damped Triangle</option>
+            <option value="biphasic">Biphasic</option>
+            <option value="triphasic">Triphasic</option>
+            <option value="pulse-train">Impulse Train</option>
         </select> <!-- class="function-options" -->
-    </div> <!-- class="legend" -->
-    <script src="./point.js"></script>
-    <script src="./function.js"></script>
+    </div>
+
+    <canvas id="slide-canvas"></canvas>
     <script src="./plotter.js"></script>
+    <script src="./function.js"></script>
     <script src="./convolution.js"></script>
 </body>

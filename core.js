@@ -1,5 +1,4 @@
 
-
 const input_ft_field = document.getElementById("f-input");
 const input_gt_field = document.getElementById("g-input");
 
@@ -8,7 +7,7 @@ const options_gt = document.getElementById("g-options");
 
 let f = null;
 let g = null;
-let g_reverse = null
+let g_reverse = null;
 let convolution = null;
 let integral = null;
 
@@ -16,7 +15,7 @@ function calculate_functions()
 {
     f = new Function('t', `return ${parse_fn(input_ft_field.value)};`);
     g = new Function('t', `return ${parse_fn(input_gt_field.value)};`);
-    convolution = convolve(f, g, -10, 10, cache_fuzz);
+    convolution = convolve(f, g, -20, 20, cache_fuzz);
 }
 
 function calculate_slider_functions(t0)
@@ -94,9 +93,13 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
+    function_plotter.view.y_max = 2.5;
+    function_plotter.view.y_min = -1;
+    function_plotter.view.x_min = -1.5;
+    function_plotter.view.x_max = -2 + 3.5 * function_plotter.canvas.width / function_plotter.canvas.height;
 
     const slide_plotter = new Plotter("slide-canvas", redraw_sliders, { height: 400 });
-    slide_plotter.slider_x = 1;
+    slide_plotter.slider_x = 2.5;
     slide_plotter.is_sliding = false;
     slide_plotter.slide_origin = 0;
 
@@ -150,6 +153,11 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
+    slide_plotter.view.y_min = -1.5;
+    slide_plotter.view.y_max = 3.5;
+    slide_plotter.view.x_min = -2.5 * slide_plotter.canvas.width / slide_plotter.canvas.height;
+    slide_plotter.view.x_max = 2.5 * slide_plotter.canvas.width / slide_plotter.canvas.height;
+
     calculate_functions();
     calculate_slider_functions(slide_plotter.slider_x);
     function_plotter.redraw();
@@ -169,6 +177,26 @@ document.addEventListener("DOMContentLoaded", () => {
         calculate_functions();
         function_plotter.redraw();
         slide_plotter.redraw();
+    });
+
+    input_ft_field.addEventListener("keydown", (event) => {
+        options_ft.value = "default";
+        setTimeout(() => {
+            calculate_functions();
+            calculate_slider_functions(slide_plotter.slider_x);
+            function_plotter.redraw();
+            slide_plotter.redraw();
+        }, 50);
+    });
+
+    input_gt_field.addEventListener("keydown", (event) => {
+        options_gt.value = "default";
+        setTimeout(() => {
+            calculate_functions();
+            calculate_slider_functions(slide_plotter.slider_x);
+            function_plotter.redraw();
+            slide_plotter.redraw();
+        }, 20);
     });
 
     document.documentElement.setAttribute('data-theme', "dark");

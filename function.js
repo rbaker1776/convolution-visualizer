@@ -7,9 +7,9 @@ const u = (t) => {
     return (t >= -1e-10 ? 1 : 0);
 };
 
-const dd = (t, delta_t) => {
-    delta_t = delta_t || Number.EPSILON;
-    return ((Math.abs(t) < delta_t / 2) ? (1 / Math.abs(delta_t)) : 0);
+const dd_epsilon = 5e-3
+const dd = (t) => {
+    return (Math.abs(t) < dd_epsilon ? 1 / (2 * dd_epsilon) : 0);
 };
 
 const sin = Math.sin;
@@ -30,13 +30,16 @@ const min = Math.min;
 const max = Math.max;
 
 
-function parse_fn(fn)
+function parse_fn(expression)
 {
-    let parsed_fn = fn
+    expression = expression
         .replace(/\s+/g, '') // remove whitespace
         .replace(/\b\^\b/g, '**') // replace '^' with '**' for exponentiation
 
-    return parsed_fn;
+    // replace a number followed by a variable with a multiplication expression
+    expression = expression.replace(/(\d)([a-zA-Z\(])/g, "$1*$2");
+
+    return expression;
 }
 
 
@@ -80,9 +83,9 @@ function dropdown_select(selection)
         case "impulse":     return "dd(t)";
         case "exp-decay":   return "exp(-t) * u(t)";
         case "ramp":        return "(1 - abs(t-1)) * u(t) * u(2-t)"
-        case "gaussian":    return "exp(-1/2 * 2*pi * t**2)"
+        case "gaussian":    return "exp(-pi * t**2)"
         case "damped-sin":  return "sin(4*t) * exp(-t) * u(t)";
-        case "damped-sq":   return "(-1)^floor(2*t) * exp(-floor(2*t)/2) * u(t)"
+        case "damped-sq":   return "(-1)**floor(2*t) * exp(-floor(2*t)/2) * u(t)"
         case "biphasic":    return "exp(-t) * (u(t) * u(1-t) - u(t-1) * u(2-t))";
         case "triphasic":   return "exp(-t/2) * (u(t) * u(1-t) - u(t-1) * u(2-t) + u(t-2) * u(3-t))";
         case "pulse-train": return "dd(t) - dd(t-1.2) + dd(t-2.4) - dd(t-3.6) + dd(t-4.8) - dd(t-6)";

@@ -252,7 +252,6 @@ class Plotter
         const width = this.canvas.width / this.scale;
 
         ctx.fillStyle = color || options.integral_color;
-        ctx.lineWidth = 2 / this.scale;
         ctx.beginPath();
         ctx.moveTo(0, this.map_y_to_pixel(0));
         ctx.lineTo(0, this.map_y_to_pixel(fn(x_min)));
@@ -269,6 +268,7 @@ class Plotter
         }
 
         ctx.lineTo(this.canvas.width, this.map_y_to_pixel(0));
+        ctx.lineTo(0, this.map_y_to_pixel(0));
         ctx.lineTo(0, this.map_y_to_pixel(fn(x_min)));
         ctx.fill();
     }

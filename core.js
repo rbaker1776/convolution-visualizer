@@ -8,13 +8,21 @@ const options_gt = document.getElementById("g-options");
 
 let f = null;
 let g = null;
+let g_reverse = null
 let convolution = null;
+let integral = null;
 
 function calculate_functions()
 {
     f = new Function('t', `return ${parse_fn(input_ft_field.value)};`);
     g = new Function('t', `return ${parse_fn(input_gt_field.value)};`);
     convolution = convolve(f, g, -10, 10, cache_fuzz);
+}
+
+function calculate_slider_functions(t0)
+{
+    g_reverse = (t) => { return g(-(t - t0)); };
+    integral = (t) => { return f(t) * g_reverse(t); };
 }
 
 function redraw_functions()
@@ -34,12 +42,7 @@ function redraw_sliders()
     this.draw_grid();
     this.draw_axes();
 
-    const f = new Function('t', `return ${parse_fn(input_ft_field.value)};`);
-    const g = new Function('t', `return ${parse_fn(input_gt_field.value)};`);
-    const g_reverse = (t) => { return g(-(t - this.slider_x)); };
-    //const integral = (t) => { return f(t) * g_reverse(t); };
-
-    //this.plot_integral(integral, "rgba(67, 166, 44, 0.4)");
+    this.plot_integral(integral, "rgba(67, 166, 44, 0.4)");
     this.plot_function(g_reverse, "orange");
     this.plot_function(f, "red");
     this.plot_function(convolution, "cyan");
@@ -142,11 +145,13 @@ document.addEventListener("DOMContentLoaded", () => {
             const dx = slide_plotter.slide_origin - slide_plotter.map_pixel_to_x(e.offsetX / slide_plotter.scale);
             slide_plotter.slider_x -= dx;
             slide_plotter.slide_origin = slide_plotter.map_pixel_to_x(e.offsetX / slide_plotter.scale);
+            calculate_slider_functions(slide_plotter.slider_x);
             slide_plotter.redraw();
         }
     });
 
     calculate_functions();
+    calculate_slider_functions(slide_plotter.slider_x);
     function_plotter.redraw();
     slide_plotter.redraw();
 

@@ -9,7 +9,9 @@
 </head>
 
 <body>
+    <hr class="functionHr">
     <canvas id="plot-canvas"></canvas>
+    <hr class="functionHr">
 
     <div class="function-input" style="margin-top: 0.4rem;">
         <p class="function-label">f(t) =</p>
@@ -24,7 +26,6 @@
             <option value="gaussian">Gaussian</option>
             <option value="damped-sin">Damped Sine</option>
             <option value="damped-sq">Damped Square</option>
-            <option value="damped-tri">Damped Triangle</option>
             <option value="biphasic">Biphasic</option>
             <option value="triphasic">Triphasic</option>
             <option value="pulse-train">Impulse Train</option>
@@ -46,15 +47,17 @@
             <option value="gaussian">Gaussian</option>
             <option value="damped-sin">Damped Sine</option>
             <option value="damped-sq">Damped Square</option>
-            <option value="damped-tri">Damped Triangle</option>
             <option value="biphasic">Biphasic</option>
             <option value="triphasic">Triphasic</option>
             <option value="pulse-train">Impulse Train</option>
         </select> <!-- class="function-options" -->
     </div>
 
+    <hr class="functionHr">
     <canvas id="slide-canvas"></canvas>
+    <hr class="functionHr">
+
     <script src="./plotter.js"></script>
     <script src="./function.js"></script>
-    <script src="./convolution.js"></script>
+    <script src="./core.js"></script>
 </body>

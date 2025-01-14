@@ -110,10 +110,24 @@ class Plotter
 
         zoom_factor = Math.min(Math.max(zoom_factor, -0.2), 0.2);
 
+        const min_y_range = 2;
+        zoom_factor = Math.max(zoom_factor, min_y_range / (y_max - y_min) - 1);
+
+        const max_y_range = 12;
+        zoom_factor = Math.min(zoom_factor, max_y_range / (y_max - y_min) - 1);
+
         view.x_max = Math.min(center.x + (x_max - center.x) * (1 + zoom_factor), 1e10);
         view.x_min = Math.max(center.x + (x_min - center.x) * (1 + zoom_factor), -1e10);
-        view.y_max = Math.min(center.y + (y_max - center.y) * (1 + zoom_factor), 1e10 * canvas.height / canvas.width);
-        view.y_min = Math.max(center.y + (y_min - center.y) * (1 + zoom_factor), -1e10 * canvas.height / canvas.width);
+        view.y_max = center.y + (y_max - center.y) * (1 + zoom_factor);
+        view.y_min = center.y + (y_min - center.y) * (1 + zoom_factor);
+
+        const max_x_abs_value = 60;
+        const max_y_abs_value = 24;
+
+        if (view.x_min < -max_x_abs_value) this.pan(-max_x_abs_value - view.x_min, 0);
+        if (view.x_max >  max_x_abs_value) this.pan( view.x_max - max_x_abs_value, 0);
+        if (view.y_min < -max_y_abs_value) this.pan(0, -max_y_abs_value - view.y_min);
+        if (view.y_max >  max_y_abs_value) this.pan(0,  view.y_max - max_y_abs_value);
 
         this.redraw();
     }
@@ -121,6 +135,13 @@ class Plotter
     pan(dx, dy)
     {
         const { view } = this;
+        const { x_min, x_max, y_min, y_max } = view;
+
+        const max_x_abs_value = 60;
+        const max_y_abs_value = 24;
+
+        dx = Math.max(Math.min(dx, max_x_abs_value - x_max), -max_x_abs_value - x_min);
+        dy = Math.max(Math.min(dy, max_y_abs_value - y_max), -max_y_abs_value - y_min);
 
         view.x_max += dx;
         view.x_min += dx;
@@ -132,7 +153,7 @@ class Plotter
 
     clear_canvas()
     {
-        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        this.ctx.clearRect(0, 0, this.canvas.width / this.scale, this.canvas.height / this.scale);
     }
 
     draw_line(from, to, stroke = false, options = {})
@@ -141,6 +162,13 @@ class Plotter
         this.ctx.moveTo(from.x, from.y);
         this.ctx.lineTo(to.x, to.y);
         if (stroke) this.ctx.stroke();
+    }
+
+    draw_point(point, radius)
+    {
+        this.ctx.beginPath();
+        this.ctx.arc(point.x, point.y, radius, 0, 2 * Math.PI);
+        this.ctx.fill();
     }
 
     draw_axes()
@@ -176,7 +204,7 @@ class Plotter
         ctx.lineWidth = 0.5 / scale;
         ctx.beginPath();
 
-        const grid_spacing = Math.pow(10, Math.floor(Math.log10((y_max - y_min) / 2)));
+        const grid_spacing = 1
 
         for (let x = Math.ceil(x_min / grid_spacing) * grid_spacing; x <= x_max; x += grid_spacing)
         {
@@ -200,7 +228,7 @@ class Plotter
         const width = this.canvas.width / this.scale;
 
         ctx.strokeStyle = color || options.function_color;
-        ctx.lineWidth = 3 / scale;
+        ctx.lineWidth = 4 / scale;
         ctx.beginPath();
         ctx.moveTo(0, this.map_y_to_pixel(fn(x_min)));
 
@@ -208,7 +236,7 @@ class Plotter
 
         for (let x = x_min; x <= x_max; x += dx)
         {
-            const y = fn(x, this.delta_t());
+            const y = fn(x);
             const x_pixel = this.map_x_to_pixel(x);
             const y_pixel = this.map_y_to_pixel(y);
             ctx.lineTo(x_pixel, y_pixel);
@@ -223,23 +251,26 @@ class Plotter
         const { x_min, x_max, y_min, y_max } = view;
         const width = this.canvas.width / this.scale;
 
-        ctx.strokeStyle = color || options.integral_color;
-        ctx.lineWidth = 1 / this.scale;
+        ctx.fillStyle = color || options.integral_color;
+        ctx.lineWidth = 2 / this.scale;
         ctx.beginPath();
-        ctx.moveTo(0, this.map_y_to_pixel(fn(x_min)));
+        ctx.moveTo(0, this.map_y_to_pixel(0));
+        ctx.lineTo(0, this.map_y_to_pixel(fn(x_min)));
 
         const x_axis_pixel = this.map_y_to_pixel(0);
         const dx = (x_max - x_min) / width;
 
         for (let x = x_min; x <= x_max; x += dx)
         {
-            const y = fn(x, this.delta_t());
+            const y = fn(x);
             const x_pixel = this.map_x_to_pixel(x);
             const y_pixel = this.map_y_to_pixel(y);
-            this.draw_line(new Point(x_pixel, x_axis_pixel), new Point(x_pixel, y_pixel));
+            ctx.lineTo(x_pixel, y_pixel);
         }
 
-        ctx.stroke();
+        ctx.lineTo(this.canvas.width, this.map_y_to_pixel(0));
+        ctx.lineTo(0, this.map_y_to_pixel(fn(x_min)));
+        ctx.fill();
     }
 
     redraw() {}

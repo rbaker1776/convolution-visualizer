@@ -9,6 +9,35 @@
 </head>
 
 <body>
+    <div class="paragraph">
+        <h2>Introduction</h2>
+        <p>This tool lets you visualize and understand the convolution of two functions—an essential operation in signal processing, image analysis, and engineering. Experiment with different functions and see how they interact, giving you insight into how convolution shapes signals and transforms data.</p>
+    </div>
+
+    <div class="paragraph">
+        <h2>What is Convolution?</h2>
+        <p>Convolution is a mathematical operation that combines two functions \(f\) and \(g\) to produce a third function \((f*g)\). It is widely used in signal processing, image analysis, and neural networks, for its ability to detect patterns and transform data. In essence, convolution allows you to blend two signals or functions, providing insight into how they interact over time.</p>
+        <h3>Definition</h3>
+        <p>The convolution of two functions \(f(t)\) and \(g(t)\) is defined as:</p>
+        <div class="equation" style="margin-top: 0.5rem;">\((f*g)(t) = \int_{-\infty}^{\infty}f(\tau)g(t - \tau)d\tau\)</div>
+        <p>Where:</p>
+        <ul>
+            <li>\(t\) is the point at which we are evaluating the convolution.</li>
+            <li>\(\tau\) is a variable of integration.</li>
+        </ul>
+        <p>The operation involves multiplying the function \(f(t)\) with a shifted and reversed version of \(g(t)\), and then integrating over all values of \(\tau\). In discrete signal processing, this becomes a summation over discrete values:</p>
+        <div class="equation" style="margin-top: 0.5rem;">\((f*g)[t] = \sum_{\tau = -\infty}^{\infty}{f[\tau]g[t-\tau]}\)</div>
+    </div>
+
+    <div class="paragraph">
+        <h2>How to Use This Tool</h3>
+        <ol>
+            <li style="margin-top: 0.45rem;"><p><b>Select Functions: </b>Enter two functions \(f(t)\) and \(g(t)\) or choose from a list of predefined functions.</p></li>
+            <li><p><b>View Functions: </b>The first canvas displays the graphs of \(f(t)\), \(g(t)\), and \((f*g)(t)\).</p></li>
+            <li><p><b>Visualize Convolution: </b>The second canvas illustrates the convolution process by showing \(g(t)\) sliding backwards over \(f(t)\). As it slides across, the value of the convolution integral is illustrated by the green shaded area; the integral over the product of the sliding functions. You can view the convolution at different points in time by dragging the dotted line left or right. The <i>area</i> shaded in green should equal the <i>height</i> of the convolution at any given point in time.</p></li>
+        </ol>
+    </div>
+
     <hr class="functionHr">
     <canvas id="plot-canvas"></canvas>
     <hr class="functionHr">
@@ -56,6 +85,147 @@
     <hr class="functionHr">
     <canvas id="slide-canvas"></canvas>
     <hr class="functionHr">
+
+    <div class="paragraph">
+        <h2>Choosing Functions</h2>
+        <p>A convolution is an infinite integral. This poses problems for computation. It is important to keep this in mind when choosing functions to convolve. If you the input functions are not <i>well behaved</i>, the convolution result will be inaccurate. This problem can usually be fixed by multiplying both functions by a unit step. For example, \(f(t) = t\) and \(g(t) = sin(t)\) produces an unreliable convolution, while \(f(t) = tu(t)\) and \(g(t) = sin(t)u(t)\) is stable.</p>
+    </div>
+
+    <div class="paragraph">
+        <table>
+            <thead>
+                <th>Syntax</th>
+                <th>Function</th>
+                <th>Definition</th>
+            </thead>
+            <tbody>
+                <tr>
+                    <td class="funcSyntax">e</td>
+                    <td class="funcName">  Euler's Number</td>
+                    <td class="funcDef">\(\approx 2.71828182846...\)</td>
+                </tr>
+                <tr>
+                    <td class="funcSyntax">pi</td>
+                    <td class="funcName">  π</td>
+                    <td class="funcDef">\(\approx 3.14159265359...\)</td>
+                </tr>
+                <tr>
+                    <td class="funcSyntax">u(t)</td>
+                    <td class="funcName">  Unit Step / Heaviside Step</td>
+                    <td class="funcDef">  \(
+                        u(t) = 
+                        \begin{cases}
+                            1 & \textrm{if } t \geq 0 \\
+                            0 & \textrm{if } t < 0 \\
+                        \end{cases}
+                    \)</td>
+                </tr>
+                <tr>
+                    <td class="funcSyntax">dd(t)</td>
+                    <td class="funcName">  Dirac Delta</td>
+                    <td class="funcDef">  \(
+                        \delta(t) = 
+                        \begin{cases}
+                            \infty & \textrm{if } t = 0 \\
+                            0 & \textrm{if } t ≠ 0 \\
+                        \end{cases}
+                    \)</td>
+                </tr>
+                <tr>
+                    <td class="funcSyntax">sin(t)</td>
+                    <td class="funcName">  Sine Wave</td>
+                    <td class="funcDef">  \(sin(t)\)</td>
+                </tr>
+                <tr>
+                    <td class="funcSyntax">cos(t)</td>
+                    <td class="funcName">  Cosine Wave</td>
+                    <td class="funcDef">  \(cos(t)\)</td>
+                </tr>
+                <tr>
+                    <td class="funcSyntax">abs(t)</td>
+                    <td class="funcName">  Absolute Value</td>
+                    <td class="funcDef">  \(|t|\)</td>
+                </tr>
+                <tr>
+                    <td class="funcSyntax">sqrt(t)</td>
+                    <td class="funcName">  Square Root</td>
+                    <td class="funcDef">  \(\sqrt{t}\)</td>
+                </tr>
+                <tr>
+                    <td class="funcSyntax">cbrt(t)</td>
+                    <td class="funcName">  Cube Root</td>
+                    <td class="funcDef">  \({t}^{\frac{1}{3}}\)</td>
+                </tr>
+                <tr>
+                    <td class="funcSyntax">exp(t)</td>
+                    <td class="funcName">  Exponential</td>
+                    <td class="funcDef">  \(e^t\)</td>
+                </tr>
+                <tr>
+                    <td class="funcSyntax">log(t)</td>
+                    <td class="funcName">  Natural Logarithm</td>
+                    <td class="funcDef">  \(log_{e}({t})\)</td>
+                </tr>
+                <tr>
+                    <td class="funcSyntax">log10(t)</td>
+                    <td class="funcName">  Base 10 Logarithm</td>
+                    <td class="funcDef">  \(log_{10}(t)\)</td>
+                </tr>
+                <tr>
+                    <td class="funcSyntax">log2(t)</td>
+                    <td class="funcName">  Base 2 Logarithm</td>
+                    <td class="funcDef">  \(log_{2}(t)\)</td>
+                </tr>
+                <tr>
+                    <td class="funcSyntax">floor(t)</td>
+                    <td class="funcName">  Floor Function</td>
+                    <td class="funcDef">  \(\lfloor{t}\rfloor\)</td>
+                </tr>
+                <tr>
+                    <td class="funcSyntax">ceil(t)</td>
+                    <td class="funcName">  Ceiling Function</td>
+                    <td class="funcDef">  \(\lceil{t}\rceil\)</td>
+                </tr>
+                <tr>
+                    <td class="funcSyntax">min(a, b)</td>
+                    <td class="funcName">  Minimum</td>
+                    <td class="funcDef">  \(
+                        min(a, b) =
+                        \begin{cases}
+                            a & \textrm{if } a \leq b \\
+                            b & \textrm{if } a > b \\
+                        \end{cases}
+                    \)</td>
+                </tr>
+                <tr>
+                    <td class="funcSyntax">max(a, b)</td>
+                    <td class="funcName">  Maximum</td>
+                    <td class="funcDef">  \(
+                        max(a, b) =
+                        \begin{cases}
+                            a & \textrm{if } a \geq b \\
+                            b & \textrm{if } a < b \\
+                        \end{cases}
+                    \)</td>
+                </tr>
+                <tr>
+                    <td class="funcSyntax">c ? a : b</td>
+                    <td class="funcName">  Piecewise / Ternary Operator</td>
+                    <td class="funcDef">   \(
+                        =
+                        \begin{cases}
+                            a & \textrm{if } c \\
+                            b & \textrm{if } \neg c \\
+                        \end{cases}
+                    \)</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <footer>
+        <p>Source Code: <a href="https://github.com/rbaker1776/convolution">github.com/rbaker1776/convolution</a></p>
+    </footer>
 
     <script src="./plotter.js"></script>
     <script src="./function.js"></script>

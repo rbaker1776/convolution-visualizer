@@ -242,3 +242,50 @@ canvas
     font-size: 12pt;
     margin-left: 1rem;
 }
+
+table
+{
+    position: relative;
+    left: 50%;
+    transform: translateX(-50%);
+    margin-top: 1.6rem;
+}
+
+td, th
+{
+    padding: 0.3rem 2rem;
+    text-align: left;
+    color: var(--text-color);
+}
+
+th
+{
+    font-size: 14pt;
+    font-family: var(--sans-serif);
+    text-align: center;
+}
+
+.funcSyntax
+{
+    font-size: 12pt;
+    font-family: var(--serif);
+    color: var(--text-color);
+}
+
+.funcName
+{
+    font-size: 12pt;
+    font-family: "Helvetica", "Roboto", sans-serif; 
+    color: var(--text-color);
+}
+
+footer
+{
+    display: flex;
+    align-items: center;
+    width: 100%;
+    font-family: var(--sans-serif);
+    color: var(--text-color);
+    font-size: 12pt;
+    padding: 1rem;
+}

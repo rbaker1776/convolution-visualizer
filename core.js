@@ -5,6 +5,10 @@ const input_gt_field = document.getElementById("g-input");
 const options_ft = document.getElementById("f-options");
 const options_gt = document.getElementById("g-options");
 
+const toggle_ft_box = document.getElementById("ft-checkbox");
+const toggle_gt_box = document.getElementById("gt-checkbox");
+const toggle_conv_box = document.getElementById("conv-checkbox");
+
 let f = null;
 let g = null;
 let g_reverse = null;
@@ -30,9 +34,9 @@ function redraw_functions()
     this.draw_grid();
     this.draw_axes();
 
-    this.plot_function(g, "orange");
-    this.plot_function(f, "red");
-    this.plot_function(convolution, "cyan");
+    if (toggle_gt_box.checked) this.plot_function(g, get_color("--gt-color"));
+    if (toggle_ft_box.checked) this.plot_function(f, get_color("--ft-color"));
+    if (toggle_conv_box.checked) this.plot_function(convolution, get_color("--conv-color"));
 }
 
 function redraw_sliders()
@@ -41,14 +45,14 @@ function redraw_sliders()
     this.draw_grid();
     this.draw_axes();
 
-    this.plot_integral(integral, "rgba(67, 166, 44, 0.4)");
-    this.plot_function(g_reverse, "orange");
-    this.plot_function(f, "red");
-    this.plot_function(convolution, "cyan");
+    this.plot_integral(integral, get_color("--area-color"));
+    this.plot_function(g_reverse, get_color("--gt-color"));
+    this.plot_function(f, get_color("--ft-color"));
+    this.plot_function(convolution, get_color("--conv-color"));
 
     this.ctx.setLineDash([5, 5]);
-    this.ctx.strokeStyle = "gray";
-    this.ctx.fillStyle = "cyan";
+    this.ctx.strokeStyle = get_color("--grid-color");
+    this.ctx.fillStyle = get_color("--conv-color");
     this.ctx.lineWidth = 3 / this.scale;
     this.draw_line(
         new Point(this.map_x_to_pixel(this.slider_x), 0),
@@ -61,6 +65,16 @@ function redraw_sliders()
 
 
 document.addEventListener("DOMContentLoaded", () => {
+    document.getElementById("theme-icon").addEventListener("click", () => {
+        const current_theme = document.documentElement.getAttribute("data-theme");
+        const new_theme = current_theme == "dark" ? "light" : "dark";
+        apply_theme(new_theme);
+        function_plotter.redraw();
+        slide_plotter.redraw();
+    });
+
+    apply_theme(init_theme());
+
     const function_plotter = new Plotter("plot-canvas", redraw_functions, { height: 400 });
    
     function_plotter.canvas.addEventListener("mousedown", (e) => {
@@ -199,5 +213,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }, 20);
     });
 
-    document.documentElement.setAttribute('data-theme', "dark");
+    toggle_ft_box.addEventListener("change", () => { function_plotter.redraw(); });
+    toggle_gt_box.addEventListener("change", () => { function_plotter.redraw(); });
+    toggle_conv_box.addEventListener("change", () => { function_plotter.redraw(); });
 });

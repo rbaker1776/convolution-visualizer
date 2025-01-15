@@ -9,6 +9,13 @@
 </head>
 
 <body>
+    <header>
+        <h1 style="color: var(--text-color)">Convolution Visualizer</h1>
+        <div class="header-buttons">
+            <button id="theme-button"><img id="theme-icon" src="./static/images/moon-icon.png" alt="Dark Mode" /></button> 
+        </div>
+    </header>
+
     <div class="paragraph">
         <h2>Introduction</h2>
         <p>This tool lets you visualize and understand the convolution of two functions—an essential operation in signal processing, image analysis, and engineering. Experiment with different functions and see how they interact, giving you insight into how convolution shapes signals and transforms data.</p>
@@ -38,9 +45,42 @@
         </ol>
     </div>
 
-    <hr class="functionHr">
-    <canvas id="plot-canvas"></canvas>
-    <hr class="functionHr">
+    <hr class="function-hr">
+
+    <div id="plot-canvas-container" style="margin-bottom: 0rem;">
+        <canvas id="plot-canvas"></canvas>
+        <div class="legend">
+            <div class="legend-item">
+                <div class="checkbox-container">
+                    <label class="legend-checkbox" id="ft-legend-checkbox">
+                        <input type="checkbox" id="ft-checkbox" checked>
+                        <span class="checkmark", style="border-color: var(--ft-color);"></span>
+                    </label>
+                </div>            
+                <span>f(t)</span>
+            </div>
+            <div class="legend-item">
+                <div class="checkbox-container" id="gt-legend-checkbox">
+                    <label class="legend-checkbox">
+                        <input type="checkbox" id="gt-checkbox" checked>
+                        <span class="checkmark", style="border-color: var(--gt-color);"></span>
+                    </label>
+                </div>            
+                <span>g(t)</span>
+            </div>
+            <div class="legend-item">
+                <div class="checkbox-container" id="conv-legend-checkbox">
+                    <label class="legend-checkbox">
+                        <input type="checkbox" id="conv-checkbox" checked>
+                        <span class="checkmark", style="border-color: var(--conv-color);"></span>
+                    </label>
+                </div>            
+                <span>(f ✽ g)(t)</span>
+            </div>
+        </div> <!-- class="legend" -->
+    </div>
+    
+    <hr class="function-hr">
 
     <div class="function-input" style="margin-top: 0.4rem;">
         <p class="function-label">f(t) =</p>
@@ -82,9 +122,9 @@
         </select> <!-- class="function-options" -->
     </div>
 
-    <hr class="functionHr">
+    <hr class="function-hr">
     <canvas id="slide-canvas"></canvas>
-    <hr class="functionHr">
+    <hr class="function-hr">
 
     <div class="paragraph">
         <h2>Choosing Functions</h2>
@@ -227,6 +267,7 @@
         <p>Source Code: <a href="https://github.com/rbaker1776/convolution">github.com/rbaker1776/convolution</a></p>
     </footer>
 
+    <script src="./colorscheme.js"></script>
     <script src="./plotter.js"></script>
     <script src="./function.js"></script>
     <script src="./core.js"></script>

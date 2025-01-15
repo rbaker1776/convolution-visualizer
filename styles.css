@@ -27,9 +27,9 @@
     --text-color: #FFFFFF;
     --axis-color: #DDDDDD;
     --grid-color: #888888;
-    --ft-color: #ff482e;
-    --gt-color: #F89900;
-    --conv-color: #4BD9FF;
+    --ft-color: #ff0000;
+    --gt-color: #ffa500;
+    --conv-color: #00ffff;
     --area-color: rgba(0, 255, 0, 0.3);
     --err-color: #E22222;
     --path-color: #E9F23F;
@@ -270,6 +270,7 @@ th
     font-size: 12pt;
     font-family: var(--serif);
     color: var(--text-color);
+    text-align: center;
 }
 
 .funcName
@@ -277,15 +278,29 @@ th
     font-size: 12pt;
     font-family: "Helvetica", "Roboto", sans-serif; 
     color: var(--text-color);
+    text-align: center;
 }
 
 footer
 {
     display: flex;
-    align-items: center;
+    align-items: space-around;
     width: 100%;
     font-family: var(--sans-serif);
     color: var(--text-color);
     font-size: 12pt;
-    padding: 1rem;
+    text-align: center;
+    padding-bottom: 2rem;
+}
+
+footer p
+{
+    width: 100%;
+    text-align: center;
+}
+
+.function-hr {
+    margin-top: 0;
+    border: none;
+    border-top: 1pt solid var(--axis-color);
 }

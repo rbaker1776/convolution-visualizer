@@ -88,6 +88,6 @@ function dropdown_select(selection)
         case "damped-sq":   return "(-1)**floor(2*t) * exp(-floor(2*t)/2) * u(t)"
         case "biphasic":    return "exp(-t) * (u(t) * u(1-t) - u(t-1) * u(2-t))";
         case "triphasic":   return "exp(-t/2) * (u(t) * u(1-t) - u(t-1) * u(2-t) + u(t-2) * u(3-t))";
-        case "pulse-train": return "dd(t) - dd(t-1.2) + dd(t-2.4) - dd(t-3.6) + dd(t-4.8) - dd(t-6)";
+        case "pulse-train": return "dd(t) - dd(t-1) + dd(t-2) - dd(t-3) + dd(t-4) - dd(t-5)";
     }
 }

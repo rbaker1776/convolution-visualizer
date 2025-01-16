@@ -27,13 +27,6 @@ class Plotter
         this.canvas.height = options.height || window.innerHeight;
         this.ctx.scale(this.scale, this.scale);
 
-        this.options = {
-            axis_color: options.axis_color || "white",
-            grid_color: options.grid_colot || "gray",
-            function_color: options.function_color || "red",
-            integral_color: options.integral_color || "green",
-        }
-
         this.view = {
             x_min: options.x_min || -5,
             y_min: options.y_min || -5 * this.canvas.height / this.canvas.width,
@@ -176,7 +169,7 @@ class Plotter
         const { canvas, ctx, options, view, scale } = this;
         const { x_min, x_max, y_min, y_max } = view;
 
-        ctx.strokeStyle = options.axis_color;
+        ctx.strokeStyle = get_color("--axis-color");
         ctx.lineWidth = 1 / scale;
 
         if (y_min <= 0 && y_max >= 0)
@@ -200,7 +193,7 @@ class Plotter
         const width = canvas.width / this.scale;
         const height = canvas.height / this.scale;
 
-        ctx.strokeStyle = options.grid_color;
+        ctx.strokeStyle = get_color("--grid-color");
         ctx.lineWidth = 0.5 / scale;
         ctx.beginPath();
 
@@ -227,7 +220,7 @@ class Plotter
         const { x_min, x_max, y_min, y_max } = view;
         const width = this.canvas.width / this.scale;
 
-        ctx.strokeStyle = color || options.function_color;
+        ctx.strokeStyle = color || get_color("--ft-color");
         ctx.lineWidth = 4 / scale;
         ctx.beginPath();
         ctx.moveTo(0, this.map_y_to_pixel(fn(x_min)));
@@ -251,7 +244,7 @@ class Plotter
         const { x_min, x_max, y_min, y_max } = view;
         const width = this.canvas.width / this.scale;
 
-        ctx.fillStyle = color || options.integral_color;
+        ctx.fillStyle = color || get_color("--area-color");
         ctx.beginPath();
         ctx.moveTo(0, this.map_y_to_pixel(0));
         ctx.lineTo(0, this.map_y_to_pixel(fn(x_min)));

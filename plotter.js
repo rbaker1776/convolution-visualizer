@@ -281,12 +281,29 @@ class Plotter
             this.resolve(window.innerWidth, 400);
         });
 
+        this.last_scroll_time = 0;
+        this.is_zooming = false;
+
         this.canvas.addEventListener("wheel", (e) => {
-            e.preventDefault();
-            this.zoom(new Point(
-                this.map_pixel_to_x(e.offsetX / this.scale),
-                this.map_pixel_to_y(e.offsetY / this.scale)
-            ), e.deltaY / 256);
+            const now = performance.now();
+            if (now - this.last_scroll_time > 150)
+                this.is_zooming = true;
+            this.last_scroll_time = now;
+
+            if (this.is_zooming)
+            {
+                e.preventDefault();
+                this.zoom(new Point(
+                    this.map_pixel_to_x(e.offsetX / this.scale),
+                    this.map_pixel_to_y(e.offsetY / this.scale)
+                ), e.deltaY / 256);
+            }
+        });
+
+        document.addEventListener("scroll", () => {
+            this.last_scroll_time = performance.now();
+            clearTimeout(this.scroll_timeout);
+            this.is_zooming = false;
         });
 
         this.map_x_to_pixel.bind(this);

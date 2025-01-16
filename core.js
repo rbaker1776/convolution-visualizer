@@ -193,14 +193,16 @@ document.addEventListener("DOMContentLoaded", () => {
         slide_plotter.redraw();
     });
 
+    let ft_debounce_timeout;
     input_ft_field.addEventListener("keydown", (event) => {
         options_ft.value = "default";
-        setTimeout(() => {
+        clearTimeout(ft_debounce_timeout);
+        ft_debounce_timeout = setTimeout(() => {
             calculate_functions();
             calculate_slider_functions(slide_plotter.slider_x);
             function_plotter.redraw();
             slide_plotter.redraw();
-        }, 50);
+        }, 600);
     });
 
     input_gt_field.addEventListener("keydown", (event) => {
@@ -210,7 +212,7 @@ document.addEventListener("DOMContentLoaded", () => {
             calculate_slider_functions(slide_plotter.slider_x);
             function_plotter.redraw();
             slide_plotter.redraw();
-        }, 20);
+        }, 200);
     });
 
     toggle_ft_box.addEventListener("change", () => { function_plotter.redraw(); });

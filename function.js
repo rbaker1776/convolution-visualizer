@@ -82,10 +82,12 @@ function dropdown_select(selection)
         case "pulse":       return "u(t) * u(1 - t)";
         case "impulse":     return "dd(t)";
         case "exp-decay":   return "exp(-t) * u(t)";
-        case "ramp":        return "(1 - abs(t-1)) * u(t) * u(2-t)"
-        case "gaussian":    return "exp(-pi * t**2)"
+        case "ramp":        return "(1 - abs(t-1)) * u(t) * u(2-t)";
+        case "gaussian":    return "exp(-pi * t**2)";
+        case "sin":         return "sin(t) * u(t)";
+        case "sq":          return "(-1)**floor(t) * u(t)";
         case "damped-sin":  return "sin(4*t) * exp(-t) * u(t)";
-        case "damped-sq":   return "(-1)**floor(2*t) * exp(-floor(2*t)/2) * u(t)"
+        case "damped-sq":   return "(-1)**floor(2*t) * exp(-floor(2*t)/2) * u(t)";
         case "biphasic":    return "exp(-t) * (u(t) * u(1-t) - u(t-1) * u(2-t))";
         case "triphasic":   return "exp(-t/2) * (u(t) * u(1-t) - u(t-1) * u(2-t) + u(t-2) * u(3-t))";
         case "pulse-train": return "dd(t) - dd(t-1) + dd(t-2) - dd(t-3) + dd(t-4) - dd(t-5)";
